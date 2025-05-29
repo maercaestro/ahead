@@ -20,10 +20,10 @@ const Navbar = () => {
         <div className="hidden md:flex items-center">
           <button 
             onClick={() => scrollToSection('about')} 
-            className="relative px-4 py-2 !bg-transparent text-white font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500 hover:via-cyan-400 hover:to-green-300 hover:bg-clip-text hover:text-transparent group"
+            className="relative px-4 py-2 !bg-transparent !text-white font-medium transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500 hover:via-cyan-400 hover:to-green-300 hover:bg-clip-text hover:text-transparent group"
           >
             <span>About</span>
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 transition-all duration-300 group-hover:w-full"></span>
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r !from-blue-500 via-cyan-400 to-green-300 transition-all duration-300 group-hover:w-full"></span>
           </button>
           <div className="h-5 w-px bg-white/20"></div>
           <button 
@@ -58,12 +58,6 @@ const Navbar = () => {
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 transition-all duration-300 group-hover:w-full"></span>
           </button>
         </div>
-        
-        <button className="md:hidden text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
       </div>
     </nav>
   );
