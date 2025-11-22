@@ -1,0 +1,70 @@
+---
+title: >-
+  Feasibility Studies for Energy Based Liquid Neural Network - Result and
+  Discussion
+date: 2025-11-22T00:00:00.000Z
+log_type: experiment
+parent_stream: src/content/research-streams/energy-based-lnn.mdx
+tags:
+  - Energy Based Learning
+  - wandb
+summary: >-
+  This is the results of the 20 run sweep done for the EB-LNN feasibility
+  studies. The experiments is done via Azure VM and recorded by wandb.
+---
+
+### Introduction
+
+This is the pilot study for Energy Based Liquid Neural Network. The aim is to create a hybrid architecture combining Liquid Neural Network with Energy Based Model. This is to create a system that is robust, adaptable in a dynamics system and capable to handle multi-objective environment.
+
+Since the entire research objective is to utilize and understand the inherent causality of Liquid Neural Network, the domain problem must be an area that is verifiable easily with physics. Therefore, the hybrid architecture will be tested within furnace thermodynamic system.
+
+For the purpose of pilot study, synthetic data will be used. The synthetic data is generated using thermodynamic equation of a furnace with varying conditions to observe multiple dynamic conditions that might exist in a real industrial furnace.
+
+### Experimental Design
+
+The objective of this pilot study is to study the feasability of the hybrid architecture. Therefore a full training regime will be implemented and evaluated with test data.
+
+The entire experiment methodology is detailed out in the Google Colab as attached in the link below. This report will only covered on the results discussion and conclusion to feasibility studies. This experiment is done in sweep mode with 20 random configurations of hyperparameters. Readers of the report may view the complete experimental implementation which is available in the attached Google Colab notebook.
+
+The experiment utilized a Random Search strategy across 20 distinct hyperparameter configurations. The attached notebook has been configured to allow for the reproduction of individual runs for verification purposes.
+
+### Experimental Notebook
+
+[View Full Experimental Implementation on Google Colab](https://colab.research.google.com/drive/1ZZ_w8pT3eToNxC9H4aih_QrLl2HcOWVo?usp=sharing)
+
+### Training Run Analysis
+
+![](/val-loss.png)
+
+![](/val-loss.png)
+
+The EB-LNN hybrid architecture consists of 2 prediction head. One is called LNN head, which predicts the excess oxygen and temperature. The other head is EBM head, which is used the calculate and predict the energy cost. The energy cost is calculated from the value of predicted excess oxygen. From all the 20 runs above, it is observed high variance of loss and epoch run. All runs are completed in less than 100 epochs and takes more than at least 20 epoch.
+
+All runs presented various different loss across all the predicted values. However, run 14 (summer-sweep-14) has the worst results of all 20 runs. This is due to multiple configuration hyperparameter that is randomly chosen for the run. Run 14 is set with 64 hidden size, alpha at 5, and learning rate at 0.005.
+
+First, the small hidden size resulted in insufficient model capacity, meaning the network simply lacked the memory to capture the furnace's thermodynamic patterns. Second, the high learning rate prevented fine-grained convergence, likely causing the model to oscillate around the optimal solution. Finally, this was compounded by the high alpha. While alpha is intended to incorporate the Energy Loss into the training signal, setting it to 5.0 created a massive imbalance. The heavy penalty on the energy head forced the model to obsess over cost reduction, ignoring the LNN's primary job of accurately predicting the physical state.
+
+In contrast, Run 16 ('cerulean-sweep-16') shows the best performance, consistently achieving the lowest validation loss across all prediction heads. This success is attributed to a combination of good hyperparameters: a high hidden size (256), a balanced alpha (0.5), and a conservative learning rate (0.0005). The increased hidden size provided sufficient model capacity to capture the complex furnace state, while the lower learning rate ensured stable convergence without overshooting. Crucially, the balanced alpha prevented the energy objective from dominating the gradient, allowing the model to simultaneously learn the system dynamics and predict the non-linear energy landscape with high accuracy. This confirms that with adequate capacity and balanced loss weighting, the EB-LNN can successfully embed both physical laws and safety constraints into a single latent representation The relations between hyperparameter selected and resulting loss can be viewed in the graph below:
+
+![](/relation.png)
+
+### Results Analysis
+
+![](/predicted-plot.png)
+
+Let's analyze the results from Run 16. A closer analysis of Run 16 reveals robust convergence, with validation losses dropping below 0.1 for both the LNN and EBM heads. The parity plots confirm this performance, showing near-perfect prediction for the physical states (Temperature and Excess Oxygen).Notably, the Energy Cost parity plot exhibits a distinct discontinuity or gap as shown in the data distribution plotted on the graph. This gap is not a sign of poor prediction, but rather a direct reflection of the defined safety constraints. It visualizes the sharp transition between the low cost of optimum operation and high cost of safety cliff. The absence of plots in this intermediate region shows the critical threshold where oxygen drops below 1.5%, which triggers the formation of CO which leads to penalty. Thus, the model has successfully learned to distinguish strictly between safe operating zones and the high-emission zones that must be avoided.
+
+However, this gap also presents a challenge. The sharp discontinuity creates a an irregularity that traditional optimizers often struggle to navigate safely. This confirms that relying on a hard-coded energy function may be too rigid for complex, real-world deployment. To address this, the full research project will introduce Generative Training via Markov Chain Monte Carlo (MCMC). Instead of forcing the model to mimic defined rules, MCMC sampling will be used to let the model explore and learn its own energy landscape. This approach aims to smooth out these sharp cliffs into navigable slopes, enabling the controller to find optimal states better without human-defined boundaries.
+
+![](/energy.png)
+
+The most definitive validation of the hybrid architecture is presented in the last figure, which maps the energy landscape learned by the EBM head. By querying the model across a grid of potential actions (Fuel×AFR) while holding the state constant, it is shown here the model's internal representation of optimal area. The landscape exhibits a clear topological structure that aligns with the underlying physics constraints. Most notably, the model clearly puts the safety cliff at the bottom of the y-axis (AFR \< 11). In this region, the predicted cost spikes instantaneously from the optimal baseline (purple) to the maximum penalty (bright yellow). This proves that the EB-LNN has successfully encoded the discontinuous nature of the CO safety constraint, creating a virtual wall that prevents the controller from selecting unsafe, fuel-rich mixtures.Furthermore, the optimal region is correctly positioned in the 12–15 AFR band. Within this valley, a subtle gradient exists along the x-axis, where lower fuel flow results in marginally deeper purple tones (lower cost) compared to higher flow. This indicates that even when safety constraints are met, the model correctly prioritizes energy conservation, satisfying the secondary objective of minimizing fuel consumption.
+
+Comparing that with the graph on the left, the 'true' physics is actually calculated from the energy function. Using simple calculation will lead to a straightforward graph with steep landscape that offers no gradient control to the user. This leads to unclear and underfined energy landscape, and almost linear relationship between the variables and the control. This shows that hybrid EB-LNN has more capability to learn the dynamics of the system and offer better controls compared to straightforward energy calculation.
+
+### Conclusion
+
+Based on the experimental results, we conclude that the hybrid Energy-Based Liquid Neural Network architecture is feasible to build and train. The study demonstrates that the network requires sufficient model capacity (a larger hidden size) and a balanced loss ratio between the EBM and LNN heads to converge effectively. Under these conditions, the network delivers strong prediction results and successfully captures the system dynamics present in the data.
+
+As discussed, future research will extend this architecture by implementing Generative Training via Markov Chain Monte Carlo (MCMC) sampling. This transition will enable the creation of a more robust, self-discovered energy landscape, ultimately providing a clearer and more interpretable control policy

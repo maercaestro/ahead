@@ -1,5 +1,5 @@
 ---
-title: Feasability Study for Energy Based Liquid Neural Network
+title: Feasability Study for Energy Based Liquid Neural Network - Methodology
 date: 2025-11-20T00:00:00.000Z
 log_type: feasibility
 parent_stream: src/content/research-streams/energy-based-lnn.mdx
@@ -409,42 +409,42 @@ Where:  𝐿 LNN  (The Physics Loss): This is the Mean Squared Error from the pr
 <CodeBlock
   code="#so let's build the code for our multi-objective condition
   def CO_model(o2_excess):
-      &#x22;&#x22;&#x22;
-      Calculates the CO (ppm) based on the excess O2 level.
-      This function is vectorized to handle numpy arrays.
-      &#x22;&#x22;&#x22;
-      # Condition 1: O2 < 1.5%
-      cond1 = (o2_excess < 1.5)
-      val1 = np.minimum(100.0, 6.0 * np.exp(1.6 * (1.5 - o2_excess)))
+  &#x22;&#x22;&#x22;
+  Calculates the CO (ppm) based on the excess O2 level.
+  This function is vectorized to handle numpy arrays.
+  &#x22;&#x22;&#x22;
+  # Condition 1: O2 < 1.5%
+  cond1 = (o2_excess < 1.5)
+  val1 = np.minimum(100.0, 6.0 * np.exp(1.6 * (1.5 - o2_excess)))
 
-      # Condition 2: 1.5% <= O2 <= 2.5%
-      cond2 = (o2_excess >= 1.5) & (o2_excess <= 2.5)
-      val2 = 0.0
+  # Condition 2: 1.5% <= O2 <= 2.5%
+  cond2 = (o2_excess >= 1.5) & (o2_excess <= 2.5)
+  val2 = 0.0
 
-      # Condition 3: O2 > 2.5%
-      cond3 = (o2_excess > 2.5)
-      val3 = 1.0 + (o2_excess - 2.5)
+  # Condition 3: O2 > 2.5%
+  cond3 = (o2_excess > 2.5)
+  val3 = 1.0 + (o2_excess - 2.5)
 
-      # Combine conditions
-      return np.where(cond1, val1, np.where(cond2, val2, val3))
+  # Combine conditions
+  return np.where(cond1, val1, np.where(cond2, val2, val3))
 
 
   def calculate_true_energy(fuel_flow, next_excess_o2):
-      &#x22;&#x22;&#x22;
-      Calculates the &#x22;true&#x22; energy (cost) for a given state-action pair.
-      This will be the target for our EBM head.
-      &#x22;&#x22;&#x22;
+  &#x22;&#x22;&#x22;
+  Calculates the &#x22;true&#x22; energy (cost) for a given state-action pair.
+  This will be the target for our EBM head.
+  &#x22;&#x22;&#x22;
 
-      W_FUEL = 1.0
-      W_SAFETY = 100.0 #this is the safety weight that is tunable for the experiment.
+  W_FUEL = 1.0
+  W_SAFETY = 100.0 #this is the safety weight that is tunable for the experiment.
 
-      # Objective B: Minimize energy consumption
-      cost_fuel = W_FUEL * fuel_flow
+  # Objective B: Minimize energy consumption
+  cost_fuel = W_FUEL * fuel_flow
 
-      # Objective A & C: Optimize O2 / Maintain Safety
-      cost_safety = W_SAFETY * CO_model(next_excess_o2)
+  # Objective A & C: Optimize O2 / Maintain Safety
+  cost_safety = W_SAFETY * CO_model(next_excess_o2)
 
-      return cost_fuel + cost_safety"
+  return cost_fuel + cost_safety"
   language="Python"
 />
 
@@ -456,42 +456,42 @@ In the next part, the hybrid EB-LNN model will be build CfC as the main componen
 
 <CodeBlock
   code="class EBLNN(nn.Module):
-      def __init__(self, input_size, hidden_size, output_size_prediction, output_size_energy):
-          super(EBLNN, self).__init__()
+  def __init__(self, input_size, hidden_size, output_size_prediction, output_size_energy):
+  super(EBLNN, self).__init__()
 
-          self.hidden_size = hidden_size
+  self.hidden_size = hidden_size
 
-          # 1. Body: The Cfc (LNN) core
-          # We use 'mixed_memory=True' as it often improves performance
-          self.cfc_body = CfC(input_size, hidden_size, mixed_memory=True, batch_first=True)
+  # 1. Body: The Cfc (LNN) core
+  # We use 'mixed_memory=True' as it often improves performance
+  self.cfc_body = CfC(input_size, hidden_size, mixed_memory=True, batch_first=True)
 
-          # 2. Head 1: The LNN Prediction Head
-          # Predicts: [next_temp, next_excess_o2]
-          self.predict_head = nn.Linear(hidden_size, output_size_prediction)
+  # 2. Head 1: The LNN Prediction Head
+  # Predicts: [next_temp, next_excess_o2]
+  self.predict_head = nn.Linear(hidden_size, output_size_prediction)
 
-          # 3. Head 2: The EBM Energy Head
-          # Predicts: [energy_true]
-          self.energy_head = nn.Linear(hidden_size, output_size_energy)
+  # 3. Head 2: The EBM Energy Head
+  # Predicts: [energy_true]
+  self.energy_head = nn.Linear(hidden_size, output_size_energy)
 
-      def forward(self, x, hx=None):
-          # x shape: (batch_size, seq_len, input_size)
+  def forward(self, x, hx=None):
+  # x shape: (batch_size, seq_len, input_size)
 
-          # Pass input through the Cfc body
-          # h_seq shape: (batch_size, seq_len, hidden_size)
-          h_seq, last_h = self.cfc_body(x, hx)
+  # Pass input through the Cfc body
+  # h_seq shape: (batch_size, seq_len, hidden_size)
+  h_seq, last_h = self.cfc_body(x, hx)
 
-          # Pass the *entire sequence* of hidden states to the heads
-          # This gives us a prediction for every timestep
+  # Pass the *entire sequence* of hidden states to the heads
+  # This gives us a prediction for every timestep
 
-          # Prediction Head Output
-          # y_pred shape: (batch_size, seq_len, output_size_prediction)
-          y_pred = self.predict_head(h_seq)
+  # Prediction Head Output
+  # y_pred shape: (batch_size, seq_len, output_size_prediction)
+  y_pred = self.predict_head(h_seq)
 
-          # Energy Head Output
-          # e_pred shape: (batch_size, seq_len, output_size_energy)
-          e_pred = self.energy_head(h_seq)
+  # Energy Head Output
+  # e_pred shape: (batch_size, seq_len, output_size_energy)
+  e_pred = self.energy_head(h_seq)
 
-          return y_pred, e_pred, last_h"
+  return y_pred, e_pred, last_h"
   language="Python"
 />
 
@@ -519,40 +519,40 @@ The experimental infrastructure is deployed on an Azure Virtual Machine (using f
   program: experiments/run_single_experiment.py
   method: random
   metric:
-    name: test_rmse_energy
-    goal: minimize
+  name: test_rmse_energy
+  goal: minimize
 
   # Stop after 20 random runs
   run_cap: 20
 
   # Early termination for poor performers
   early_terminate:
-    type: hyperband
-    min_iter: 15  # Give at least 15 epochs before terminating
-    eta: 3
-    s: 2
+  type: hyperband
+  min_iter: 15  # Give at least 15 epochs before terminating
+  eta: 3
+  s: 2
 
   parameters:
-    # Alpha: Balance parameter between LNN and EBM loss
-    alpha:
-      values: [0.5, 1.0, 2.0, 5.0]
-    
-    # Hidden Size: Size of CfC hidden layer
-    hidden_size:
-      values: [64, 128, 256]
-    
-    # W_Safety: Weight for safety/CO in energy calculation
-    w_safety:
-      values: [50.0, 100.0, 200.0]
-    
-    # Learning Rate
-    learning_rate:
-      values: [0.0001, 0.0005, 0.001, 0.005]
+  # Alpha: Balance parameter between LNN and EBM loss
+  alpha:
+  values: [0.5, 1.0, 2.0, 5.0]
+
+  # Hidden Size: Size of CfC hidden layer
+  hidden_size:
+  values: [64, 128, 256]
+
+  # W_Safety: Weight for safety/CO in energy calculation
+  w_safety:
+  values: [50.0, 100.0, 200.0]
+
+  # Learning Rate
+  learning_rate:
+  values: [0.0001, 0.0005, 0.001, 0.005]
   "
   language="YAML"
 />
 
-The following code block allows you to execute a full training run of the EBLNN model. Please note that for demonstration purposes, this implementation creates a single run and excludes the extensive hyperparameter sweep and early stopping mechanisms used in the full study. For a comprehensive analysis of the hyperparameter optimization and final metrics, please refer to the accompanying Weights & Biases (W\&B) report.
+The following code block allows you to execute a full training run of the EBLNN model. Please note that for demonstration purposes, this implementation creates a single run and excludes the extensive hyperparameter sweep and early stopping mechanisms used in the full study. For a comprehensive analysis of the hyperparameter optimization and final metrics, you can refer to the report page.
 
 <CodeBlock
   code="import pandas as pd
@@ -576,7 +576,7 @@ The following code block allows you to execute a full training run of the EBLNN 
   np.random.seed(SEED)
   torch.manual_seed(SEED)
   if torch.cuda.is_available():
-      torch.cuda.manual_seed_all(SEED)
+  torch.cuda.manual_seed_all(SEED)
 
   # --- Hyperparameters ---
   FILE_PATH = 'synthetic_temperature_data.csv'
@@ -591,571 +591,569 @@ The following code block allows you to execute a full training run of the EBLNN 
 
   # We need a vectorized version of the CO model to apply to pandas/numpy arrays
   def CO_model(o2_excess):
-      &#x22;&#x22;&#x22;
-      Calculates the CO (ppm) based on the excess O2 level.
-      This function is vectorized to handle numpy arrays.
-      &#x22;&#x22;&#x22;
-      # Condition 1: O2 < 1.5%
-      cond1 = (o2_excess < 1.5)
-      val1 = np.minimum(100.0, 6.0 * np.exp(1.6 * (1.5 - o2_excess)))
+  &#x22;&#x22;&#x22;
+  Calculates the CO (ppm) based on the excess O2 level.
+  This function is vectorized to handle numpy arrays.
+  &#x22;&#x22;&#x22;
+  # Condition 1: O2 < 1.5%
+  cond1 = (o2_excess < 1.5)
+  val1 = np.minimum(100.0, 6.0 * np.exp(1.6 * (1.5 - o2_excess)))
 
-      # Condition 2: 1.5% <= O2 <= 2.5%
-      cond2 = (o2_excess >= 1.5) & (o2_excess <= 2.5)
-      val2 = 0.0
+  # Condition 2: 1.5% <= O2 <= 2.5%
+  cond2 = (o2_excess >= 1.5) & (o2_excess <= 2.5)
+  val2 = 0.0
 
-      # Condition 3: O2 > 2.5%
-      cond3 = (o2_excess > 2.5)
-      val3 = 1.0 + (o2_excess - 2.5)
+  # Condition 3: O2 > 2.5%
+  cond3 = (o2_excess > 2.5)
+  val3 = 1.0 + (o2_excess - 2.5)
 
-      # Combine conditions
-      return np.where(cond1, val1, np.where(cond2, val2, val3))
+  # Combine conditions
+  return np.where(cond1, val1, np.where(cond2, val2, val3))
 
   def calculate_true_energy(fuel_flow, next_excess_o2):
-      &#x22;&#x22;&#x22;
-      Calculates the &#x22;true&#x22; energy (cost) for a given state-action pair.
-      This will be the target for our EBM head.
-      &#x22;&#x22;&#x22;
-      # EBM Weights (Tunable, but we'll fix them for the pilot)
-      W_FUEL = 1.0
-      W_SAFETY = 100.0 # Make safety (CO) a high-penalty item
+  &#x22;&#x22;&#x22;
+  Calculates the &#x22;true&#x22; energy (cost) for a given state-action pair.
+  This will be the target for our EBM head.
+  &#x22;&#x22;&#x22;
+  # EBM Weights (Tunable, but we'll fix them for the pilot)
+  W_FUEL = 1.0
+  W_SAFETY = 100.0 # Make safety (CO) a high-penalty item
 
-      # Objective B: Minimize energy consumption
-      cost_fuel = W_FUEL * fuel_flow
+  # Objective B: Minimize energy consumption
+  cost_fuel = W_FUEL * fuel_flow
 
-      # Objective A & C: Optimize O2 / Maintain Safety
-      cost_safety = W_SAFETY * CO_model(next_excess_o2)
+  # Objective A & C: Optimize O2 / Maintain Safety
+  cost_safety = W_SAFETY * CO_model(next_excess_o2)
 
-      return cost_fuel + cost_safety
+  return cost_fuel + cost_safety
 
   # --- Phase 1: Data Preparation ---
 
   def load_and_prepare_data(file_path, seq_len, batch_size):
-      &#x22;&#x22;&#x22;
-      Loads, processes, and prepares the data for the EBLNN.
-      &#x22;&#x22;&#x22;
-      print(f&#x22;Loading data from {file_path}...&#x22;)
-      try:
-          df = pd.read_csv(file_path)
-      except FileNotFoundError:
-          print(f&#x22;Error: File not found at {file_path}&#x22;)
-          print(&#x22;Please make sure 'synthetic_temperature_data.csv' is in the same directory.&#x22;)
-          return None, None, None, None, None
+  &#x22;&#x22;&#x22;
+  Loads, processes, and prepares the data for the EBLNN.
+  &#x22;&#x22;&#x22;
+  print(f&#x22;Loading data from {file_path}...&#x22;)
+  try:
+  df = pd.read_csv(file_path)
+  except FileNotFoundError:
+  print(f&#x22;Error: File not found at {file_path}&#x22;)
+  print(&#x22;Please make sure 'synthetic_temperature_data.csv' is in the same directory.&#x22;)
+  return None, None, None, None, None
 
-      # 1. Compute the &#x22;true energy&#x22; target for the EBM head
-      print(&#x22;Calculating true energy target (E_true)...&#x22;)
-      df['energy_true'] = calculate_true_energy(df['fuel_flow'], df['next_excess_o2'])
+  # 1. Compute the &#x22;true energy&#x22; target for the EBM head
+  print(&#x22;Calculating true energy target (E_true)...&#x22;)
+  df['energy_true'] = calculate_true_energy(df['fuel_flow'], df['next_excess_o2'])
 
-      # 2. Define Input Features and Output Targets
-      # Inputs (X): The state and action at time 't'
-      input_cols = [
-          'fuel_flow', 'air_fuel_ratio', 'current_temp',
-          'inflow_temp', 'inflow_rate'
-      ]
+  # 2. Define Input Features and Output Targets
+  # Inputs (X): The state and action at time 't'
+  input_cols = [
+  'fuel_flow', 'air_fuel_ratio', 'current_temp',
+  'inflow_temp', 'inflow_rate'
+  ]
 
-      # Outputs (Y): The predicted state and energy at time 't+1'
-      # We train the model to predict all three jointly
-      output_cols = [
-          'next_temp', 'next_excess_o2', 'energy_true'
-      ]
+  # Outputs (Y): The predicted state and energy at time 't+1'
+  # We train the model to predict all three jointly
+  output_cols = [
+  'next_temp', 'next_excess_o2', 'energy_true'
+  ]
 
-      INPUT_FEATURES = len(input_cols)
-      OUTPUT_FEATURES = len(output_cols) # This is 3
+  INPUT_FEATURES = len(input_cols)
+  OUTPUT_FEATURES = len(output_cols) # This is 3
 
-      # 3. Reshape data into sequences (N_sequences, Seq_Len, N_features)
-      # Total rows = 300,000. Seq_Len = 30. -> N_sequences = 10,000
-      n_sequences = len(df) // seq_len
+  # 3. Reshape data into sequences (N_sequences, Seq_Len, N_features)
+  # Total rows = 300,000. Seq_Len = 30. -> N_sequences = 10,000
+  n_sequences = len(df) // seq_len
 
-      x_data = df[input_cols].values.reshape(n_sequences, seq_len, INPUT_FEATURES)
-      y_data = df[output_cols].values.reshape(n_sequences, seq_len, OUTPUT_FEATURES)
+  x_data = df[input_cols].values.reshape(n_sequences, seq_len, INPUT_FEATURES)
+  y_data = df[output_cols].values.reshape(n_sequences, seq_len, OUTPUT_FEATURES)
 
-      # 4. Train/Val/Test Split (80% Train, 10% Val, 10% Test)
-      x_train, x_test, y_train, y_test = train_test_split(
-          x_data, y_data, test_size=0.2, random_state=SEED
-      )
-      x_val, x_test, y_val, y_test = train_test_split(
-          x_test, y_test, test_size=0.5, random_state=SEED
-      )
+  # 4. Train/Val/Test Split (80% Train, 10% Val, 10% Test)
+  x_train, x_test, y_train, y_test = train_test_split(
+  x_data, y_data, test_size=0.2, random_state=SEED
+  )
+  x_val, x_test, y_val, y_test = train_test_split(
+  x_test, y_test, test_size=0.5, random_state=SEED
+  )
 
-      print(f&#x22;Data split: {len(x_train)} train, {len(x_val)} val, {len(x_test)} test sequences.&#x22;)
+  print(f&#x22;Data split: {len(x_train)} train, {len(x_val)} val, {len(x_test)} test sequences.&#x22;)
 
-      # 5. Scaling (CRITICAL for LNNs)
-      # We must scale inputs and outputs based on the TRAINING set only
+  # 5. Scaling (CRITICAL for LNNs)
+  # We must scale inputs and outputs based on the TRAINING set only
 
-      # Reshape to 2D for scaler
-      x_train_2d = x_train.reshape(-1, INPUT_FEATURES)
-      y_train_2d = y_train.reshape(-1, OUTPUT_FEATURES)
+  # Reshape to 2D for scaler
+  x_train_2d = x_train.reshape(-1, INPUT_FEATURES)
+  y_train_2d = y_train.reshape(-1, OUTPUT_FEATURES)
 
-      input_scaler = StandardScaler().fit(x_train_2d)
-      target_scaler = StandardScaler().fit(y_train_2d)
+  input_scaler = StandardScaler().fit(x_train_2d)
+  target_scaler = StandardScaler().fit(y_train_2d)
 
-      # Apply scaling to all sets
-      x_train = input_scaler.transform(x_train_2d).reshape(x_train.shape)
-      y_train = target_scaler.transform(y_train_2d).reshape(y_train.shape)
+  # Apply scaling to all sets
+  x_train = input_scaler.transform(x_train_2d).reshape(x_train.shape)
+  y_train = target_scaler.transform(y_train_2d).reshape(y_train.shape)
 
-      x_val = input_scaler.transform(x_val.reshape(-1, INPUT_FEATURES)).reshape(x_val.shape)
-      y_val = target_scaler.transform(y_val.reshape(-1, OUTPUT_FEATURES)).reshape(y_val.shape)
+  x_val = input_scaler.transform(x_val.reshape(-1, INPUT_FEATURES)).reshape(x_val.shape)
+  y_val = target_scaler.transform(y_val.reshape(-1, OUTPUT_FEATURES)).reshape(y_val.shape)
 
-      x_test = input_scaler.transform(x_test.reshape(-1, INPUT_FEATURES)).reshape(x_test.shape)
-      y_test = target_scaler.transform(y_test.reshape(-1, OUTPUT_FEATURES)).reshape(y_test.shape)
+  x_test = input_scaler.transform(x_test.reshape(-1, INPUT_FEATURES)).reshape(x_test.shape)
+  y_test = target_scaler.transform(y_test.reshape(-1, OUTPUT_FEATURES)).reshape(y_test.shape)
 
-      print(&#x22;Data scaling complete.&#x22;)
+  print(&#x22;Data scaling complete.&#x22;)
 
-      # 6. Create PyTorch Tensors and DataLoaders
-      train_dataset = TensorDataset(torch.FloatTensor(x_train), torch.FloatTensor(y_train))
-      val_dataset = TensorDataset(torch.FloatTensor(x_val), torch.FloatTensor(y_val))
-      test_dataset = TensorDataset(torch.FloatTensor(x_test), torch.FloatTensor(y_test))
+  # 6. Create PyTorch Tensors and DataLoaders
+  train_dataset = TensorDataset(torch.FloatTensor(x_train), torch.FloatTensor(y_train))
+  val_dataset = TensorDataset(torch.FloatTensor(x_val), torch.FloatTensor(y_val))
+  test_dataset = TensorDataset(torch.FloatTensor(x_test), torch.FloatTensor(y_test))
 
-      train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-      val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-      test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+  train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+  val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+  test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-      print(&#x22;DataLoaders created.&#x22;)
+  print(&#x22;DataLoaders created.&#x22;)
 
-      return (train_loader, val_loader, test_loader,
-              input_scaler, target_scaler,
-              INPUT_FEATURES, OUTPUT_FEATURES)
+  return (train_loader, val_loader, test_loader,
+  input_scaler, target_scaler,
+  INPUT_FEATURES, OUTPUT_FEATURES)
 
 
   # --- Phase 2: EBLNN Model Definition ---
 
   class EBLNN(nn.Module):
-      def __init__(self, input_size, hidden_size, output_size_prediction, output_size_energy):
-          super(EBLNN, self).__init__()
+  def __init__(self, input_size, hidden_size, output_size_prediction, output_size_energy):
+  super(EBLNN, self).__init__()
 
-          self.hidden_size = hidden_size
+  self.hidden_size = hidden_size
 
-          # 1. Body: The Cfc (LNN) core
-          # We use 'mixed_memory=True' as it often improves performance
-          self.cfc_body = CfC(input_size, hidden_size, mixed_memory=True, batch_first=True)
+  # 1. Body: The Cfc (LNN) core
+  # We use 'mixed_memory=True' as it often improves performance
+  self.cfc_body = CfC(input_size, hidden_size, mixed_memory=True, batch_first=True)
 
-          # 2. Head 1: The LNN Prediction Head
-          # Predicts: [next_temp, next_excess_o2]
-          self.predict_head = nn.Linear(hidden_size, output_size_prediction)
+  # 2. Head 1: The LNN Prediction Head
+  # Predicts: [next_temp, next_excess_o2]
+  self.predict_head = nn.Linear(hidden_size, output_size_prediction)
 
-          # 3. Head 2: The EBM Energy Head
-          # Predicts: [energy_true]
-          self.energy_head = nn.Linear(hidden_size, output_size_energy)
+  # 3. Head 2: The EBM Energy Head
+  # Predicts: [energy_true]
+  self.energy_head = nn.Linear(hidden_size, output_size_energy)
 
-      def forward(self, x, hx=None):
-          # x shape: (batch_size, seq_len, input_size)
+  def forward(self, x, hx=None):
+  # x shape: (batch_size, seq_len, input_size)
 
-          # Pass input through the Cfc body
-          # h_seq shape: (batch_size, seq_len, hidden_size)
-          h_seq, last_h = self.cfc_body(x, hx)
+  # Pass input through the Cfc body
+  # h_seq shape: (batch_size, seq_len, hidden_size)
+  h_seq, last_h = self.cfc_body(x, hx)
 
-          # Pass the *entire sequence* of hidden states to the heads
-          # This gives us a prediction for every timestep
+  # Pass the *entire sequence* of hidden states to the heads
+  # This gives us a prediction for every timestep
 
-          # Prediction Head Output
-          # y_pred shape: (batch_size, seq_len, output_size_prediction)
-          y_pred = self.predict_head(h_seq)
+  # Prediction Head Output
+  # y_pred shape: (batch_size, seq_len, output_size_prediction)
+  y_pred = self.predict_head(h_seq)
 
-          # Energy Head Output
-          # e_pred shape: (batch_size, seq_len, output_size_energy)
-          e_pred = self.energy_head(h_seq)
+  # Energy Head Output
+  # e_pred shape: (batch_size, seq_len, output_size_energy)
+  e_pred = self.energy_head(h_seq)
 
-          return y_pred, e_pred, last_h
+  return y_pred, e_pred, last_h
 
   # --- Visualization Functions ---
 
   def plot_loss_curves(history, epochs):
-      &#x22;&#x22;&#x22;
-      Plots and saves the training and validation loss curves.
-      &#x22;&#x22;&#x22;
-      print(&#x22;Generating loss curves...&#x22;)
-      epoch_range = range(1, epochs + 1)
+  &#x22;&#x22;&#x22;
+  Plots and saves the training and validation loss curves.
+  &#x22;&#x22;&#x22;
+  print(&#x22;Generating loss curves...&#x22;)
+  epoch_range = range(1, epochs + 1)
 
-      plt.figure(figsize=(15, 5))
+  plt.figure(figsize=(15, 5))
 
-      # Plot 1: Total Loss
-      plt.subplot(1, 3, 1)
-      plt.plot(epoch_range, history['train_loss'], label='Training Total Loss')
-      plt.plot(epoch_range, history['val_loss'], label='Validation Total Loss')
-      plt.title('Total Loss')
-      plt.xlabel('Epoch')
-      plt.ylabel('Loss')
-      plt.legend()
-      plt.grid(True)
+  # Plot 1: Total Loss
+  plt.subplot(1, 3, 1)
+  plt.plot(epoch_range, history['train_loss'], label='Training Total Loss')
+  plt.plot(epoch_range, history['val_loss'], label='Validation Total Loss')
+  plt.title('Total Loss')
+  plt.xlabel('Epoch')
+  plt.ylabel('Loss')
+  plt.legend()
+  plt.grid(True)
 
-      # Plot 2: LNN Prediction Loss (Validation)
-      plt.subplot(1, 3, 2)
-      plt.plot(epoch_range, history['val_lnn_loss'], label='Validation LNN Loss', color='orange')
-      plt.title('Prediction (LNN) Loss')
-      plt.xlabel('Epoch')
-      plt.ylabel('Loss')
-      plt.legend()
-      plt.grid(True)
+  # Plot 2: LNN Prediction Loss (Validation)
+  plt.subplot(1, 3, 2)
+  plt.plot(epoch_range, history['val_lnn_loss'], label='Validation LNN Loss', color='orange')
+  plt.title('Prediction (LNN) Loss')
+  plt.xlabel('Epoch')
+  plt.ylabel('Loss')
+  plt.legend()
+  plt.grid(True)
 
-      # Plot 3: EBM Energy Loss (Validation)
-      plt.subplot(1, 3, 3)
-      plt.plot(epoch_range, history['val_ebm_loss'], label='Validation EBM Loss', color='green')
-      plt.title('Energy (EBM) Loss')
-      plt.xlabel('Epoch')
-      plt.ylabel('Loss')
-      plt.legend()
-      plt.grid(True)
+  # Plot 3: EBM Energy Loss (Validation)
+  plt.subplot(1, 3, 3)
+  plt.plot(epoch_range, history['val_ebm_loss'], label='Validation EBM Loss', color='green')
+  plt.title('Energy (EBM) Loss')
+  plt.xlabel('Epoch')
+  plt.ylabel('Loss')
+  plt.legend()
+  plt.grid(True)
 
-      plt.tight_layout()
-      plt.savefig('loss_curves.png')
-      print(&#x22;Saved 'loss_curves.png'&#x22;)
-      plt.close()
+  plt.tight_layout()
+  plt.savefig('loss_curves.png')
+  print(&#x22;Saved 'loss_curves.png'&#x22;)
+  plt.close()
 
   def plot_parity_plots(true_temp, pred_temp, true_o2, pred_o2, true_energy, pred_energy):
-      &#x22;&#x22;&#x22;
-      Plots and saves the parity plots (true vs. predicted) for all targets.
-      &#x22;&#x22;&#x22;
-      print(&#x22;Generating parity plots...&#x22;)
+  &#x22;&#x22;&#x22;
+  Plots and saves the parity plots (true vs. predicted) for all targets.
+  &#x22;&#x22;&#x22;
+  print(&#x22;Generating parity plots...&#x22;)
 
-      # To avoid plotting 30,000 points, we'll sample 5,000
-      sample_size = min(5000, len(true_temp))
-      indices = np.random.choice(len(true_temp), sample_size, replace=False)
+  # To avoid plotting 30,000 points, we'll sample 5,000
+  sample_size = min(5000, len(true_temp))
+  indices = np.random.choice(len(true_temp), sample_size, replace=False)
 
-      plt.figure(figsize=(18, 5))
+  plt.figure(figsize=(18, 5))
 
-      # Plot 1: Temperature
-      plt.subplot(1, 3, 1)
-      min_temp = min(np.min(true_temp), np.min(pred_temp))
-      max_temp = max(np.max(true_temp), np.max(pred_temp))
-      plt.scatter(true_temp[indices], pred_temp[indices], alpha=0.3, s=10)
-      plt.plot([min_temp, max_temp], [min_temp, max_temp], 'r--', label='y=x')
-      plt.title('LNN Head: Temperature (°C)')
-      plt.xlabel('True Next Temperature')
-      plt.ylabel('Predicted Next Temperature')
-      plt.legend()
-      plt.grid(True)
+  # Plot 1: Temperature
+  plt.subplot(1, 3, 1)
+  min_temp = min(np.min(true_temp), np.min(pred_temp))
+  max_temp = max(np.max(true_temp), np.max(pred_temp))
+  plt.scatter(true_temp[indices], pred_temp[indices], alpha=0.3, s=10)
+  plt.plot([min_temp, max_temp], [min_temp, max_temp], 'r--', label='y=x')
+  plt.title('LNN Head: Temperature (°C)')
+  plt.xlabel('True Next Temperature')
+  plt.ylabel('Predicted Next Temperature')
+  plt.legend()
+  plt.grid(True)
 
-      # Plot 2: Excess O₂
-      plt.subplot(1, 3, 2)
-      min_o2 = min(np.min(true_o2), np.min(pred_o2))
-      max_o2 = max(np.max(true_o2), np.max(pred_o2))
-      plt.scatter(true_o2[indices], pred_o2[indices], alpha=0.3, s=10)
-      plt.plot([min_o2, max_o2], [min_o2, max_o2], 'r--', label='y=x')
-      plt.title('LNN Head: Excess O₂ (%)')
-      plt.xlabel('True Next O₂')
-      plt.ylabel('Predicted Next O₂')
-      plt.legend()
-      plt.grid(True)
+  # Plot 2: Excess O₂
+  plt.subplot(1, 3, 2)
+  min_o2 = min(np.min(true_o2), np.min(pred_o2))
+  max_o2 = max(np.max(true_o2), np.max(pred_o2))
+  plt.scatter(true_o2[indices], pred_o2[indices], alpha=0.3, s=10)
+  plt.plot([min_o2, max_o2], [min_o2, max_o2], 'r--', label='y=x')
+  plt.title('LNN Head: Excess O₂ (%)')
+  plt.xlabel('True Next O₂')
+  plt.ylabel('Predicted Next O₂')
+  plt.legend()
+  plt.grid(True)
 
-      # Plot 3: Energy (Cost)
-      plt.subplot(1, 3, 3)
-      min_e = min(np.min(true_energy), np.min(pred_energy))
-      max_e = max(np.max(true_energy), np.max(pred_energy))
-      plt.scatter(true_energy[indices], pred_energy[indices], alpha=0.3, s=10)
-      plt.plot([min_e, max_e], [min_e, max_e], 'r--', label='y=x')
-      plt.title('EBM Head: Energy (Cost)')
-      plt.xlabel('True Energy')
-      plt.ylabel('Predicted Energy')
-      plt.legend()
-      plt.grid(True)
+  # Plot 3: Energy (Cost)
+  plt.subplot(1, 3, 3)
+  min_e = min(np.min(true_energy), np.min(pred_energy))
+  max_e = max(np.max(true_energy), np.max(pred_energy))
+  plt.scatter(true_energy[indices], pred_energy[indices], alpha=0.3, s=10)
+  plt.plot([min_e, max_e], [min_e, max_e], 'r--', label='y=x')
+  plt.title('EBM Head: Energy (Cost)')
+  plt.xlabel('True Energy')
+  plt.ylabel('Predicted Energy')
+  plt.legend()
+  plt.grid(True)
 
-      plt.tight_layout()
-      plt.savefig('parity_plots.png')
-      print(&#x22;Saved 'parity_plots.png'&#x22;)
-      plt.close()
+  plt.tight_layout()
+  plt.savefig('parity_plots.png')
+  print(&#x22;Saved 'parity_plots.png'&#x22;)
+  plt.close()
 
   def plot_energy_landscape(model, input_scaler, target_scaler, device):
-      &#x22;&#x22;&#x22;
-      Plots and saves the learned energy landscape from the EBM head.
-      &#x22;&#x22;&#x22;
-      print(&#x22;Generating learned energy landscape...&#x22;)
-      model.eval()
+  &#x22;&#x22;&#x22;
+  Plots and saves the learned energy landscape from the EBM head.
+  &#x22;&#x22;&#x22;
+  print(&#x22;Generating learned energy landscape...&#x22;)
+  model.eval()
 
-      # 1. Define a fixed state (from our spec: T_target=450, typical T_in/F_in)
-      # Input cols: ['fuel_flow', 'air_fuel_ratio', 'current_temp', 'inflow_temp', 'inflow_rate']
-      T_CURR_FIXED = 450.0
-      T_IN_FIXED = 150.0
-      F_IN_FIXED = 125.0
+  # 1. Define a fixed state (from our spec: T_target=450, typical T_in/F_in)
+  # Input cols: ['fuel_flow', 'air_fuel_ratio', 'current_temp', 'inflow_temp', 'inflow_rate']
+  T_CURR_FIXED = 450.0
+  T_IN_FIXED = 150.0
+  F_IN_FIXED = 125.0
 
-      # 2. Create a grid of actions
-      fuel_flow_range = np.linspace(1.0, 20.0, 50)
-      afr_range = np.linspace(10.0, 25.0, 50)
-      xx, yy = np.meshgrid(fuel_flow_range, afr_range)
+  # 2. Create a grid of actions
+  fuel_flow_range = np.linspace(1.0, 20.0, 50)
+  afr_range = np.linspace(10.0, 25.0, 50)
+  xx, yy = np.meshgrid(fuel_flow_range, afr_range)
 
-      # 3. Create the input batch
-      grid_inputs = np.zeros((xx.ravel().shape[0], 5))
-      grid_inputs[:, 0] = xx.ravel()
-      grid_inputs[:, 1] = yy.ravel()
-      grid_inputs[:, 2] = T_CURR_FIXED
-      grid_inputs[:, 3] = T_IN_FIXED
-      grid_inputs[:, 4] = F_IN_FIXED
+  # 3. Create the input batch
+  grid_inputs = np.zeros((xx.ravel().shape[0], 5))
+  grid_inputs[:, 0] = xx.ravel()
+  grid_inputs[:, 1] = yy.ravel()
+  grid_inputs[:, 2] = T_CURR_FIXED
+  grid_inputs[:, 3] = T_IN_FIXED
+  grid_inputs[:, 4] = F_IN_FIXED
 
-      # 4. Scale the inputs
-      grid_scaled = input_scaler.transform(grid_inputs)
+  # 4. Scale the inputs
+  grid_scaled = input_scaler.transform(grid_inputs)
 
-      # 5. Reshape for LNN (batch_size, seq_len, features)
-      # We treat each grid point as a batch of 1 sequence of length 1
-      # Model input shape: (2500, 1, 5)
-      grid_tensor = torch.FloatTensor(grid_scaled).unsqueeze(1).to(device)
+  # 5. Reshape for LNN (batch_size, seq_len, features)
+  # We treat each grid point as a batch of 1 sequence of length 1
+  # Model input shape: (2500, 1, 5)
+  grid_tensor = torch.FloatTensor(grid_scaled).unsqueeze(1).to(device)
 
-      # 6. Run the model
-      with torch.no_grad():
-          # y_pred shape: (2500, 1, 2), e_pred shape: (2500, 1, 1)
-          _, e_pred, _ = model(grid_tensor)
+  # 6. Run the model
+  with torch.no_grad():
+  # y_pred shape: (2500, 1, 2), e_pred shape: (2500, 1, 1)
+  _, e_pred, _ = model(grid_tensor)
 
-      # 7. De-scale the energy prediction
-      # We must use the mean/std for the *energy* column (index 2)
-      e_pred_cpu = e_pred.squeeze().cpu().numpy()
-      energy_mean = target_scaler.mean_[2]
-      energy_std = target_scaler.scale_[2]
+  # 7. De-scale the energy prediction
+  # We must use the mean/std for the *energy* column (index 2)
+  e_pred_cpu = e_pred.squeeze().cpu().numpy()
+  energy_mean = target_scaler.mean_[2]
+  energy_std = target_scaler.scale_[2]
 
-      e_pred_denorm = (e_pred_cpu * energy_std) + energy_mean
+  e_pred_denorm = (e_pred_cpu * energy_std) + energy_mean
 
-      # Reshape back to 2D grid
-      Z = e_pred_denorm.reshape(xx.shape)
+  # Reshape back to 2D grid
+  Z = e_pred_denorm.reshape(xx.shape)
 
-      # 8. Plot the heatmap
-      plt.figure(figsize=(10, 8))
-      plt.contourf(xx, yy, Z, levels=50, cmap='viridis_r') # _r reverses cmap (blue=low)
-      plt.colorbar(label='Predicted Energy (Cost)')
-      plt.title(f'Learned Energy Landscape (EBM Head)\nFixed State: T_curr={T_CURR_FIXED}°C')
-      plt.xlabel('Fuel Flow (units/hr)')
-      plt.ylabel('Air-Fuel Ratio')
-      plt.savefig('energy_landscape.png')
-      print(&#x22;Saved 'energy_landscape.png'&#x22;)
-      plt.close()
+  # 8. Plot the heatmap
+  plt.figure(figsize=(10, 8))
+  plt.contourf(xx, yy, Z, levels=50, cmap='viridis_r') # _r reverses cmap (blue=low)
+  plt.colorbar(label='Predicted Energy (Cost)')
+  plt.title(f'Learned Energy Landscape (EBM Head)\nFixed State: T_curr={T_CURR_FIXED}°C')
+  plt.xlabel('Fuel Flow (units/hr)')
+  plt.ylabel('Air-Fuel Ratio')
+  plt.savefig('energy_landscape.png')
+  print(&#x22;Saved 'energy_landscape.png'&#x22;)
+  plt.close()
 
-      # Also plot the &#x22;true&#x22; landscape for comparison
-      print(&#x22;Generating true energy landscape...&#x22;)
-      # We need the O2 prediction for the *true* model
-      # For this, we need to run the physics function
-      true_o2_grid = []
-      for afr in yy.ravel():
-          # O₂_excess = O₂_stoich × (1 - 1/AFR) × 100 (for AFR > 1)
-          O2_STOICH = 20.9
-          if afr > 1.0:
-              true_o2_grid.append(O2_STOICH * (1 - 1/afr) * 100)
-          else:
-              true_o2_grid.append(0.0)
+  # Also plot the &#x22;true&#x22; landscape for comparison
+  print(&#x22;Generating true energy landscape...&#x22;)
+  # We need the O2 prediction for the *true* model
+  # For this, we need to run the physics function
+  true_o2_grid = []
+  for afr in yy.ravel():
+  # O₂_excess = O₂_stoich × (1 - 1/AFR) × 100 (for AFR > 1)
+  O2_STOICH = 20.9
+  if afr > 1.0:
+  true_o2_grid.append(O2_STOICH * (1 - 1/afr) * 100)
+  else:
+  true_o2_grid.append(0.0)
 
-      true_o2_grid = np.array(true_o2_grid)
+  true_o2_grid = np.array(true_o2_grid)
 
-      # Now calculate true energy
-      true_energy_grid = calculate_true_energy(xx.ravel(), true_o2_grid)
-      Z_true = true_energy_grid.reshape(xx.shape)
+  # Now calculate true energy
+  true_energy_grid = calculate_true_energy(xx.ravel(), true_o2_grid)
+  Z_true = true_energy_grid.reshape(xx.shape)
 
-      plt.figure(figsize=(10, 8))
-      plt.contourf(xx, yy, Z_true, levels=50, cmap='viridis_r')
-      plt.colorbar(label='True Energy (Cost)')
-      plt.title(f'True Physics Energy Landscape\nFixed State: T_curr={T_CURR_FIXED}°C')
-      plt.xlabel('Fuel Flow (units/hr)')
-      plt.ylabel('Air-Fuel Ratio')
-      plt.savefig('energy_landscape_TRUE.png')
-      print(&#x22;Saved 'energy_landscape_TRUE.png'&#x22;)
-      plt.close()
+  plt.figure(figsize=(10, 8))
+  plt.contourf(xx, yy, Z_true, levels=50, cmap='viridis_r')
+  plt.colorbar(label='True Energy (Cost)')
+  plt.title(f'True Physics Energy Landscape\nFixed State: T_curr={T_CURR_FIXED}°C')
+  plt.xlabel('Fuel Flow (units/hr)')
+  plt.ylabel('Air-Fuel Ratio')
+  plt.savefig('energy_landscape_TRUE.png')
+  print(&#x22;Saved 'energy_landscape_TRUE.png'&#x22;)
+  plt.close()
 
 
   # --- Phase 3 & 4: Main Training and Evaluation Loop ---
 
   def main():
-      # Set device
-      device = torch.device(&#x22;cuda&#x22; if torch.cuda.is_available() else &#x22;cpu&#x22;)
-      print(f&#x22;Using device: {device}&#x22;)
+  # Set device
+  device = torch.device(&#x22;cuda&#x22; if torch.cuda.is_available() else &#x22;cpu&#x22;)
+  print(f&#x22;Using device: {device}&#x22;)
 
-      # 1. Load Data
-      (train_loader, val_loader, test_loader,
-       input_scaler, target_scaler,
-       INPUT_FEATURES, OUTPUT_FEATURES) = load_and_prepare_data(
-           FILE_PATH, SEQUENCE_LENGTH, BATCH_SIZE
-       )
+  # 1. Load Data
+  (train_loader, val_loader, test_loader,
+  input_scaler, target_scaler,
+  INPUT_FEATURES, OUTPUT_FEATURES) = load_and_prepare_data(
+  FILE_PATH, SEQUENCE_LENGTH, BATCH_SIZE
+  )
 
-      if train_loader is None:
-          return # Exit if data loading failed
+  if train_loader is None:
+  return # Exit if data loading failed
 
-      # 2. Initialize Model, Loss, and Optimizer
-      # Prediction head outputs 2 values: [next_temp, next_excess_o2]
-      OUTPUT_SIZE_PREDICTION = 2
-      # Energy head outputs 1 value: [energy_true]
-      OUTPUT_SIZE_ENERGY = 1
+  # 2. Initialize Model, Loss, and Optimizer
+  # Prediction head outputs 2 values: [next_temp, next_excess_o2]
+  OUTPUT_SIZE_PREDICTION = 2
+  # Energy head outputs 1 value: [energy_true]
+  OUTPUT_SIZE_ENERGY = 1
 
-      model = EBLNN(
-          INPUT_FEATURES,
-          HIDDEN_SIZE,
-          OUTPUT_SIZE_PREDICTION,
-          OUTPUT_SIZE_ENERGY
-      ).to(device)
+  model = EBLNN(
+  INPUT_FEATURES,
+  HIDDEN_SIZE,
+  OUTPUT_SIZE_PREDICTION,
+  OUTPUT_SIZE_ENERGY
+  ).to(device)
 
-      # Loss functions for each head
-      lnn_criterion = nn.MSELoss()
-      ebm_criterion = nn.MSELoss()
+  # Loss functions for each head
+  lnn_criterion = nn.MSELoss()
+  ebm_criterion = nn.MSELoss()
 
-      optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+  optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-      print(f&#x22;\nStarting training for {EPOCHS} epochs...&#x22;)
+  print(f&#x22;\nStarting training for {EPOCHS} epochs...&#x22;)
 
-      # History tracking for Plot 1
-      history = {
-          'train_loss': [], 'val_loss': [],
-          'val_lnn_loss': [], 'val_ebm_loss': []
-      }
+  # History tracking for Plot 1
+  history = {
+  'train_loss': [], 'val_loss': [],
+  'val_lnn_loss': [], 'val_ebm_loss': []
+  }
 
-      # 3. Training Loop
-      best_val_loss = float('inf')
-      for epoch in range(EPOCHS):
-          model.train()
-          total_train_loss = 0
-          total_train_lnn_loss = 0
-          total_train_ebm_loss = 0
+  # 3. Training Loop
+  best_val_loss = float('inf')
+  for epoch in range(EPOCHS):
+  model.train()
+  total_train_loss = 0
+  total_train_lnn_loss = 0
+  total_train_ebm_loss = 0
 
-          for x_batch, y_batch in train_loader:
-              x_batch, y_batch = x_batch.to(device), y_batch.to(device)
+  for x_batch, y_batch in train_loader:
+  x_batch, y_batch = x_batch.to(device), y_batch.to(device)
 
-              # Forward pass
-              y_pred, e_pred, _ = model(x_batch)
+  # Forward pass
+  y_pred, e_pred, _ = model(x_batch)
 
-              # Separate the true targets
-              # y_true_pred: [next_temp, next_excess_o2]
-              y_true_pred = y_batch[:, :, 0:2]
-              # y_true_energy: [energy_true]
-              y_true_energy = y_batch[:, :, 2].unsqueeze(-1) # Keep last dim
+  # Separate the true targets
+  # y_true_pred: [next_temp, next_excess_o2]
+  y_true_pred = y_batch[:, :, 0:2]
+  # y_true_energy: [energy_true]
+  y_true_energy = y_batch[:, :, 2].unsqueeze(-1) # Keep last dim
 
-              # Calculate joint loss
-              loss_lnn = lnn_criterion(y_pred, y_true_pred)
-              loss_ebm = ebm_criterion(e_pred, y_true_energy)
-              total_loss = loss_lnn + ALPHA * loss_ebm
+  # Calculate joint loss
+  loss_lnn = lnn_criterion(y_pred, y_true_pred)
+  loss_ebm = ebm_criterion(e_pred, y_true_energy)
+  total_loss = loss_lnn + ALPHA * loss_ebm
 
-              # Backward pass
-              optimizer.zero_grad()
-              total_loss.backward()
-              optimizer.step()
+  # Backward pass
+  optimizer.zero_grad()
+  total_loss.backward()
+  optimizer.step()
 
-              total_train_loss += total_loss.item()
-              total_train_lnn_loss += loss_lnn.item()
-              total_train_ebm_loss += loss_ebm.item()
+  total_train_loss += total_loss.item()
+  total_train_lnn_loss += loss_lnn.item()
+  total_train_ebm_loss += loss_ebm.item()
 
-          avg_train_loss = total_train_loss / len(train_loader)
-          avg_train_lnn_loss = total_train_lnn_loss / len(train_loader)
-          avg_train_ebm_loss = total_train_ebm_loss / len(train_loader)
+  avg_train_loss = total_train_loss / len(train_loader)
+  avg_train_lnn_loss = total_train_lnn_loss / len(train_loader)
+  avg_train_ebm_loss = total_train_ebm_loss / len(train_loader)
 
-          # 4. Validation Loop
-          model.eval()
-          total_val_loss = 0
-          total_val_lnn_loss = 0
-          total_val_ebm_loss = 0
+  # 4. Validation Loop
+  model.eval()
+  total_val_loss = 0
+  total_val_lnn_loss = 0
+  total_val_ebm_loss = 0
 
-          with torch.no_grad():
-              for x_batch, y_batch in val_loader:
-                  x_batch, y_batch = x_batch.to(device), y_batch.to(device)
+  with torch.no_grad():
+  for x_batch, y_batch in val_loader:
+  x_batch, y_batch = x_batch.to(device), y_batch.to(device)
 
-                  y_pred, e_pred, _ = model(x_batch)
+  y_pred, e_pred, _ = model(x_batch)
 
-                  y_true_pred = y_batch[:, :, 0:2]
-                  y_true_energy = y_batch[:, :, 2].unsqueeze(-1)
+  y_true_pred = y_batch[:, :, 0:2]
+  y_true_energy = y_batch[:, :, 2].unsqueeze(-1)
 
-                  loss_lnn = lnn_criterion(y_pred, y_true_pred)
-                  loss_ebm = ebm_criterion(e_pred, y_true_energy)
-                  total_loss = loss_lnn + ALPHA * loss_ebm
+  loss_lnn = lnn_criterion(y_pred, y_true_pred)
+  loss_ebm = ebm_criterion(e_pred, y_true_energy)
+  total_loss = loss_lnn + ALPHA * loss_ebm
 
-                  total_val_loss += total_loss.item()
-                  total_val_lnn_loss += loss_lnn.item()
-                  total_val_ebm_loss += loss_ebm.item()
+  total_val_loss += total_loss.item()
+  total_val_lnn_loss += loss_lnn.item()
+  total_val_ebm_loss += loss_ebm.item()
 
-          avg_val_loss = total_val_loss / len(val_loader)
-          avg_val_lnn_loss = total_val_lnn_loss / len(val_loader)
-          avg_val_ebm_loss = total_val_ebm_loss / len(val_loader)
+  avg_val_loss = total_val_loss / len(val_loader)
+  avg_val_lnn_loss = total_val_lnn_loss / len(val_loader)
+  avg_val_ebm_loss = total_val_ebm_loss / len(val_loader)
 
-          # Store losses in history
-          history['train_loss'].append(avg_train_loss)
-          history['val_loss'].append(avg_val_loss)
-          history['val_lnn_loss'].append(avg_val_lnn_loss)
-          history['val_ebm_loss'].append(avg_val_ebm_loss)
+  # Store losses in history
+  history['train_loss'].append(avg_train_loss)
+  history['val_loss'].append(avg_val_loss)
+  history['val_lnn_loss'].append(avg_val_lnn_loss)
+  history['val_ebm_loss'].append(avg_val_ebm_loss)
 
-          print(f&#x22;Epoch {epoch+1}/{EPOCHS} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} &#x22;
-                f&#x22;(LNN: {avg_val_lnn_loss:.4f}, EBM: {avg_val_ebm_loss:.4f})&#x22;)
+  print(f&#x22;Epoch {epoch+1}/{EPOCHS} | Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} &#x22;
+  f&#x22;(LNN: {avg_val_lnn_loss:.4f}, EBM: {avg_val_ebm_loss:.4f})&#x22;)
 
-          if avg_val_loss < best_val_loss:
-              best_val_loss = avg_val_loss
-              torch.save(model.state_dict(), 'eblnn_best_model.pth')
-              print(f&#x22;  -> New best model saved!&#x22;)
+  if avg_val_loss < best_val_loss:
+  best_val_loss = avg_val_loss
+  torch.save(model.state_dict(), 'eblnn_best_model.pth')
+  print(f&#x22;  -> New best model saved!&#x22;)
 
-      # 5. Final Evaluation on Test Set
-      print(&#x22;\nTraining complete. Evaluating on test set with best model...&#x22;)
+  # 5. Final Evaluation on Test Set
+  print(&#x22;\nTraining complete. Evaluating on test set with best model...&#x22;)
 
-      # Load the best model
-      model.load_state_dict(torch.load('eblnn_best_model.pth'))
-      model.eval()
+  # Load the best model
+  model.load_state_dict(torch.load('eblnn_best_model.pth'))
+  model.eval()
 
-      all_y_true = []
-      all_y_pred = []
-      all_e_true = []
-      all_e_pred = []
+  all_y_true = []
+  all_y_pred = []
+  all_e_true = []
+  all_e_pred = []
 
-      with torch.no_grad():
-          for x_batch, y_batch in test_loader:
-              x_batch, y_batch = x_batch.to(device), y_batch.to(device)
+  with torch.no_grad():
+  for x_batch, y_batch in test_loader:
+  x_batch, y_batch = x_batch.to(device), y_batch.to(device)
 
-              y_pred, e_pred, _ = model(x_batch)
+  y_pred, e_pred, _ = model(x_batch)
 
-              y_true_pred = y_batch[:, :, 0:2]
-              y_true_energy = y_batch[:, :, 2].unsqueeze(-1)
+  y_true_pred = y_batch[:, :, 0:2]
+  y_true_energy = y_batch[:, :, 2].unsqueeze(-1)
 
-              # Store all predictions and true values (on CPU)
-              all_y_true.append(y_true_pred.cpu().numpy())
-              all_y_pred.append(y_pred.cpu().numpy())
-              all_e_true.append(y_true_energy.cpu().numpy())
-              all_e_pred.append(e_pred.cpu().numpy())
+  # Store all predictions and true values (on CPU)
+  all_y_true.append(y_true_pred.cpu().numpy())
+  all_y_pred.append(y_pred.cpu().numpy())
+  all_e_true.append(y_true_energy.cpu().numpy())
+  all_e_pred.append(e_pred.cpu().numpy())
 
-      # Concatenate all batches and reshape to 2D
-      all_y_true = np.concatenate(all_y_true).reshape(-1, OUTPUT_SIZE_PREDICTION)
-      all_y_pred = np.concatenate(all_y_pred).reshape(-1, OUTPUT_SIZE_PREDICTION)
-      all_e_true = np.concatenate(all_e_true).reshape(-1, OUTPUT_SIZE_ENERGY)
-      all_e_pred = np.concatenate(all_e_pred).reshape(-1, OUTPUT_SIZE_ENERGY)
+  # Concatenate all batches and reshape to 2D
+  all_y_true = np.concatenate(all_y_true).reshape(-1, OUTPUT_SIZE_PREDICTION)
+  all_y_pred = np.concatenate(all_y_pred).reshape(-1, OUTPUT_SIZE_PREDICTION)
+  all_e_true = np.concatenate(all_e_true).reshape(-1, OUTPUT_SIZE_ENERGY)
+  all_e_pred = np.concatenate(all_e_pred).reshape(-1, OUTPUT_SIZE_ENERGY)
 
-      # 7. De-normalize the results to interpret them
-      # We need to reconstruct the full target shape to use the scaler
+  # 7. De-normalize the results to interpret them
+  # We need to reconstruct the full target shape to use the scaler
 
-      # [next_temp, next_excess_o2, energy_true]
-      y_true_full = np.hstack([all_y_true, all_e_true])
-      y_pred_full = np.hstack([all_y_pred, all_e_pred])
+  # [next_temp, next_excess_o2, energy_true]
+  y_true_full = np.hstack([all_y_true, all_e_true])
+  y_pred_full = np.hstack([all_y_pred, all_e_pred])
 
-      y_true_denorm = target_scaler.inverse_transform(y_true_full)
-      y_pred_denorm = target_scaler.inverse_transform(y_pred_full)
+  y_true_denorm = target_scaler.inverse_transform(y_true_full)
+  y_pred_denorm = target_scaler.inverse_transform(y_pred_full)
 
-      # Separate the de-normalized columns
-      true_temp = y_true_denorm[:, 0]
-      pred_temp = y_pred_denorm[:, 0]
+  # Separate the de-normalized columns
+  true_temp = y_true_denorm[:, 0]
+  pred_temp = y_pred_denorm[:, 0]
 
-      true_o2 = y_true_denorm[:, 1]
-      pred_o2 = y_pred_denorm[:, 1]
+  true_o2 = y_true_denorm[:, 1]
+  pred_o2 = y_pred_denorm[:, 1]
 
-      true_energy = y_true_denorm[:, 2]
-      pred_energy = y_pred_denorm[:, 2]
+  true_energy = y_true_denorm[:, 2]
+  pred_energy = y_pred_denorm[:, 2]
 
-      # 8. Calculate and Print Final Metrics (RMSE)
-      rmse_temp = np.sqrt(np.mean((pred_temp - true_temp)**2))
-      rmse_o2 = np.sqrt(np.mean((pred_o2 - true_o2)**2))
-      rmse_energy = np.sqrt(np.mean((pred_energy - true_energy)**2))
+  # 8. Calculate and Print Final Metrics (RMSE)
+  rmse_temp = np.sqrt(np.mean((pred_temp - true_temp)**2))
+  rmse_o2 = np.sqrt(np.mean((pred_o2 - true_o2)**2))
+  rmse_energy = np.sqrt(np.mean((pred_energy - true_energy)**2))
 
-      # Calculate Normalized RMSE (as a percentage) for Energy
-      mean_true_energy = np.mean(true_energy)
-      nrmse_energy_percent = 0.0
-      if mean_true_energy > 1e-6: # Avoid division by zero
-          nrmse_energy_percent = (rmse_energy / mean_true_energy) * 100
+  # Calculate Normalized RMSE (as a percentage) for Energy
+  mean_true_energy = np.mean(true_energy)
+  nrmse_energy_percent = 0.0
+  if mean_true_energy > 1e-6: # Avoid division by zero
+  nrmse_energy_percent = (rmse_energy / mean_true_energy) * 100
 
-      print(&#x22;\n--- Final Test Set Evaluation ---&#x22;)
-      print(f&#x22;Prediction Head (LNN):&#x22;)
-      print(f&#x22;  - Next Temperature RMSE: {rmse_temp:.4f} °C&#x22;)
-      print(f&#x22;  - Next Excess O₂ RMSE: {rmse_o2:.4f} %&#x22;)
-      print(f&#x22;\nEnergy Head (EBM):&#x22;)
-      print(f&#x22;  - Energy (Cost) RMSE: {rmse_energy:.4f}&#x22;)
-      print(f&#x22;  - Energy (Cost) NRMSE: {nrmse_energy_percent:.2f} % (of mean)&#x22;)
-      print(&#x22;\n-----------------------------------&#x22;)
-      print(&#x22;Pilot study complete. Model 'eblnn_best_model.pth' is saved.&#x22;)
+  print(&#x22;\n--- Final Test Set Evaluation ---&#x22;)
+  print(f&#x22;Prediction Head (LNN):&#x22;)
+  print(f&#x22;  - Next Temperature RMSE: {rmse_temp:.4f} °C&#x22;)
+  print(f&#x22;  - Next Excess O₂ RMSE: {rmse_o2:.4f} %&#x22;)
+  print(f&#x22;\nEnergy Head (EBM):&#x22;)
+  print(f&#x22;  - Energy (Cost) RMSE: {rmse_energy:.4f}&#x22;)
+  print(f&#x22;  - Energy (Cost) NRMSE: {nrmse_energy_percent:.2f} % (of mean)&#x22;)
+  print(&#x22;\n-----------------------------------&#x22;)
+  print(&#x22;Pilot study complete. Model 'eblnn_best_model.pth' is saved.&#x22;)
 
-      # 9. Generate all plots
-      print(&#x22;\nGenerating all visualizations...&#x22;)
-      plot_loss_curves(history, EPOCHS)
+  # 9. Generate all plots
+  print(&#x22;\nGenerating all visualizations...&#x22;)
+  plot_loss_curves(history, EPOCHS)
 
-      plot_parity_plots(true_temp, pred_temp, true_o2, pred_o2,
-                        true_energy, pred_energy)
+  plot_parity_plots(true_temp, pred_temp, true_o2, pred_o2,
+  true_energy, pred_energy)
 
-      plot_energy_landscape(model, input_scaler, target_scaler, device)
+  plot_energy_landscape(model, input_scaler, target_scaler, device)
 
-      print(&#x22;\nAll visualizations saved. Script finished.&#x22;)
+  print(&#x22;\nAll visualizations saved. Script finished.&#x22;)
 
 
   if __name__ == &#x22;__main__&#x22;:
-      main()"
+  main()"
   language="Python"
 />
-
-[https://api.wandb.ai/links/maercaestro/e1kslxb9](https://api.wandb.ai/links/maercaestro/e1kslxb9)
