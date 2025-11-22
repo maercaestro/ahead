@@ -1,12 +1,15 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import logoPersonal from '../assets/logo-personal.png';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isHomePage = location.pathname === '/';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollToSection = (sectionId) => {
+    setMobileMenuOpen(false);
     if (isHomePage) {
       document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
     } else {
@@ -18,6 +21,7 @@ const Navbar = () => {
   };
 
   const handleResearchClick = () => {
+    setMobileMenuOpen(false);
     navigate('/research');
   };
 
@@ -33,6 +37,7 @@ const Navbar = () => {
           />
         </div>
         
+        {/* Desktop Menu */}
         <div className="hidden md:flex items-center">
           <button 
             onClick={() => scrollToSection('about')} 
@@ -82,7 +87,66 @@ const Navbar = () => {
             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 transition-all duration-300 group-hover:w-full"></span>
           </button>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden !bg-transparent text-white p-2"
+          aria-label="Toggle menu"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {mobileMenuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden !bg-dark/98 border-t border-white/10">
+          <div className="container mx-auto px-4 py-4 flex flex-col space-y-2">
+            <button 
+              onClick={() => scrollToSection('about')} 
+              className="text-left px-4 py-3 text-white hover:bg-white/5 rounded transition-colors"
+            >
+              About
+            </button>
+            <button 
+              onClick={() => scrollToSection('projects')} 
+              className="text-left px-4 py-3 text-white hover:bg-white/5 rounded transition-colors"
+            >
+              Projects
+            </button>
+            <button 
+              onClick={() => scrollToSection('articles')} 
+              className="text-left px-4 py-3 text-white hover:bg-white/5 rounded transition-colors"
+            >
+              Writings
+            </button>
+            <button 
+              onClick={handleResearchClick}
+              className="text-left px-4 py-3 text-white hover:bg-white/5 rounded transition-colors"
+            >
+              Research
+            </button>
+            <button 
+              onClick={() => scrollToSection('resume')} 
+              className="text-left px-4 py-3 text-white hover:bg-white/5 rounded transition-colors"
+            >
+              Resume
+            </button>
+            <button 
+              onClick={() => scrollToSection('contact')} 
+              className="text-left px-4 py-3 text-white hover:bg-white/5 rounded transition-colors"
+            >
+              Contact
+            </button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
