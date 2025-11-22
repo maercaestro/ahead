@@ -1,0 +1,109 @@
+query research_streams($relativePath: String!) {
+  research_streams(relativePath: $relativePath) {
+    ... on Document {
+      _sys {
+        filename
+        basename
+        hasReferences
+        breadcrumbs
+        path
+        relativePath
+        extension
+      }
+      id
+    }
+    ...Research_streamsParts
+  }
+}
+
+query research_streamsConnection($before: String, $after: String, $first: Float, $last: Float, $sort: String, $filter: Research_streamsFilter) {
+  research_streamsConnection(
+    before: $before
+    after: $after
+    first: $first
+    last: $last
+    sort: $sort
+    filter: $filter
+  ) {
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+    }
+    totalCount
+    edges {
+      cursor
+      node {
+        ... on Document {
+          _sys {
+            filename
+            basename
+            hasReferences
+            breadcrumbs
+            path
+            relativePath
+            extension
+          }
+          id
+        }
+        ...Research_streamsParts
+      }
+    }
+  }
+}
+
+query lab_logs($relativePath: String!) {
+  lab_logs(relativePath: $relativePath) {
+    ... on Document {
+      _sys {
+        filename
+        basename
+        hasReferences
+        breadcrumbs
+        path
+        relativePath
+        extension
+      }
+      id
+    }
+    ...Lab_logsParts
+  }
+}
+
+query lab_logsConnection($before: String, $after: String, $first: Float, $last: Float, $sort: String, $filter: Lab_logsFilter) {
+  lab_logsConnection(
+    before: $before
+    after: $after
+    first: $first
+    last: $last
+    sort: $sort
+    filter: $filter
+  ) {
+    pageInfo {
+      hasPreviousPage
+      hasNextPage
+      startCursor
+      endCursor
+    }
+    totalCount
+    edges {
+      cursor
+      node {
+        ... on Document {
+          _sys {
+            filename
+            basename
+            hasReferences
+            breadcrumbs
+            path
+            relativePath
+            extension
+          }
+          id
+        }
+        ...Lab_logsParts
+      }
+    }
+  }
+}

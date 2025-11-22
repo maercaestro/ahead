@@ -4,16 +4,33 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "tinacms dev -c \"vite\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
+    "@tinacms/cli": "^1.12.4",
+    "@tinacms/toolkit": "^1.7.13",
+    "fs-extra": "^11.3.2",
+    "katex": "^0.16.25",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwindcss": "^4.1.7"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.9.6",
+    "react-syntax-highlighter": "^16.1.0",
+    "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
+    "slate": "^0.118.1",
+    "slate-dom": "^0.119.0",
+    "slate-history": "^0.113.1",
+    "slate-hyperscript": "^0.100.0",
+    "slate-react": "^0.119.0",
+    "tailwindcss": "^4.1.7",
+    "tinacms": "^2.9.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

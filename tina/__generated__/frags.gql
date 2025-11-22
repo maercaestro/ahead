@@ -1,0 +1,52 @@
+fragment Research_streamsParts on Research_streams {
+  __typename
+  title
+  slug
+  date
+  author
+  supervisor
+  status
+  abstract
+  tags
+  keywords
+  cover_image
+  body
+}
+
+fragment Lab_logsParts on Lab_logs {
+  __typename
+  title
+  date
+  log_type
+  parent_stream {
+    ... on Research_streams {
+      __typename
+      title
+      slug
+      date
+      author
+      supervisor
+      status
+      abstract
+      tags
+      keywords
+      cover_image
+      body
+    }
+    ... on Document {
+      _sys {
+        filename
+        basename
+        hasReferences
+        breadcrumbs
+        path
+        relativePath
+        extension
+      }
+      id
+    }
+  }
+  tags
+  summary
+  body
+}
