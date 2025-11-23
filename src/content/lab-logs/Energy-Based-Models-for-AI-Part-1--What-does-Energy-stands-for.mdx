@@ -67,3 +67,55 @@ where given X, we try to find the best Y where it produces the lowest energy sco
 Now got it?
 
 I know that you guys have started scratching your head, so let's do some demonstration to show how this works
+
+### Let's make a simple neural network
+
+Let's make a simple neural network. And let's train and plot the energy function after training. The model would be just a simple 2 layers with activation function in between. Simple ReLU for the first one and Tanh for the final activation function. Why Tanh? Because if just using ReLu, it will create exploding gradient at the end. So we use Tanh.
+
+We define the correct point, the correct X and Y combination, which is point \[1.0,1.0], and we will try to train the model to minimize the energy of this point, and maximize the energy of other wrong points.
+
+And we will plot and look at this energy landscape that we have created. So let's do that
+
+<CodeBlock
+  code="#first download the package and library
+  import torch
+  import torch.nn as nn
+  import torch.optim as optim
+  import numpy as np
+  import matplotlib.pyplot as plt
+
+
+  #we define our correct point in the x,y space
+  correct_point = torch.tensor([[1.0,1.0]])
+
+  #then we define our model
+  class EnergyModel(nn.Module):
+    def __init__(self):
+
+      super().__init__()
+      self.model = nn.Sequential(
+          nn.Linear(2,64),
+          nn.ReLU(),
+          nn.Linear(64,1),
+          nn.Tanh() #have to use Tanh to prevent exploding gradient
+      )
+
+    def forward(self,x):
+      return self.model(x)
+
+  #let's make function to plot our energy surface in 2d space
+  def plot_energy_surface(model, ax, title):
+      x = np.linspace(-2, 2, 100)
+      y = np.linspace(-2, 2, 100)
+      xx, yy = np.meshgrid(x, y)
+      grid_points = torch.tensor(np.c_[xx.ravel(), yy.ravel()], dtype=torch.float32)
+
+      with torch.no_grad():
+          zz = model(grid_points).numpy().reshape(xx.shape)
+
+      ax.contourf(xx, yy, zz, levels=50, cmap='viridis')
+      ax.scatter([1], [1], c='red', marker='*', s=200, label='Correct Point (1,1)')
+      ax.set_title(title)
+      ax.legend()"
+  language="Python"
+/>
