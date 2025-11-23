@@ -143,3 +143,37 @@ And we will plot and look at this energy landscape that we have created. So let'
   plot_energy_surface(model_bad, ax1, &#x22;Collapsed Landscape (Bad Loss)&#x22;)"
   language="Python"
 />
+
+![](/Screenshot%202025-11-23%20at%208.14.54%E2%80%AFAM.png)
+
+<CodeBlock
+  code="# --- Training with the STABLE Contrastive Loss ---
+  model_stable = EnergyModel() # Use the new class with Tanh
+  optimizer_stable = optim.Adam(model_stable.parameters(), lr=0.01)
+
+  print(&#x22;\nTraining with the stable contrastive loss function...&#x22;)
+  for epoch in range(2000): # 2000 epochs is usually enough
+      optimizer_stable.zero_grad()
+
+      # Push down on the energy of the correct point (towards -1)
+      energy_correct = model_stable(correct_point)
+
+      # Pull up on the energy of incorrect, &#x22;negative&#x22; points (towards +1)
+      incorrect_points = torch.randn(32, 2) # More points can help
+      energy_incorrect = torch.mean(model_stable(incorrect_points))
+
+      # The new, stable loss function
+      loss = energy_correct - energy_incorrect
+
+      loss.backward()
+      optimizer_stable.step()
+
+      if epoch % 200 == 0:
+          print(f&#x22;Epoch {epoch}, Loss: {loss.item():.4f}&#x22;)
+
+  # Visualize the final result
+  fig, ax = plt.subplots(figsize=(6, 5))
+  plot_energy_surface(model_stable, ax, &#x22;Stable Landscape (Bounded Energy)&#x22;)
+  plt.show()"
+  language="Python"
+/>
