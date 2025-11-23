@@ -119,3 +119,27 @@ And we will plot and look at this energy landscape that we have created. So let'
       ax.legend()"
   language="Python"
 />
+
+<CodeBlock
+  code="#let's start training with bad loss function
+  model_bad = EnergyModel()
+  optimizer_bad = optim.Adam(model_bad.parameters(), lr=0.01)
+
+  #let's iterate this i think along 1000 points?
+  print(&#x22;Training with bad loss function&#x22;)
+  for epoch in range(1000):
+    optimizer_bad.zero_grad()
+    energy_correct = model_bad(correct_point) #we just need to pass the correct point to our model,and train based on correct point
+    loss_bad = torch.abs(energy_correct)
+    loss_bad.backward()
+    optimizer_bad.step()
+
+    if epoch % 200 == 0:
+      print(f&#x22;Epoch {epoch}, Loss: {loss_bad.item()}&#x22;)
+
+
+  #let's visualize the result
+  fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+  plot_energy_surface(model_bad, ax1, &#x22;Collapsed Landscape (Bad Loss)&#x22;)"
+  language="Python"
+/>
