@@ -7,5 +7,63 @@ tags:
   - energy-based-models
   - yann-lecun
   - boltzmann-machine
+summary: The first article discussing Energy Based Models
 ---
 
+![](/Screenshot%202025-11-23%20at%208.02.41%E2%80%AFAM.png)
+
+In the last few months, in July actually, several researchers from Amazon, Stanford and Harvard University published a paper discussing on Energy Based Transformers. You may read the paper here: https\://arxiv.org/pdf/2507.02092
+
+The idea behind this paper is to show that Energy Based Transformer are better at scaling and better at thinking (compared to reasoning method that we use currently). I don't want to go into detail what the paper is all about, but it does trigger thousands of questions in my brain.
+
+One of the main one, "What does the term energy doing there?"
+
+Coming from energy industry, I was severely confused. Especially when reading the word energy based transformer. Isn't transformer is already energy based?
+
+But the energy here actually refers to a different paradigm in how we devise and train our machine learning/neural network model. So today, and for the next few months, we will explore the concept of energy based model and understand in details on what it's all about.
+
+### Where does this comes from?
+
+Based on my reading, the first time the concept of energy comes from, is from Hopfield Network, published in 1982. John Hopfield who won the nobel prize for this network, introduce a neural network that trains with the objective to minimize the energy.
+
+Geoffrey Hinton and his friend which is hard for me to spell his name here,improved upon that model, and created the Boltzmann Machine in 1985. Which extended the idea by imagine the model as randomized probability distribution.
+
+Then in 2006, Yann LeCunn and his colleagues generalized this model into a complete framework and published it. You can read it here, and it serves as introductory for anyone who intends to delve into this. You can read it here: https\://web.stanford.edu/class/cs379c/archive/2012/suggested\_reading\_list/documents/LeCunetal06.pdf
+
+This will be my guide in writing this series for the months to come
+
+### What do I think?
+
+So, for this part, this is based on my opinion really. Haven't really done a complete structured research on this, but this is what I feel based on what I gleamed on the current AI research trend.
+
+We know that since Transformer comes out in 2017, we have been having a hard time to understand what our neural networks are doing. Some of the researchers even point out that the point began in 2011, with the existence of Alex Net. The model has becomes too big, and we don't really understand the inner workings of the model.
+
+We know how to make, we know what the operation needed, component needed, but we don't why the model behaves that way during and after training. Let me give you a more concrete example.
+
+Say we train a transformer for text prediction. We know that once we finished training, the key, query and value of our data is not mapped at the higher dimensions. We know that will be the results. What we don't know is, where the map location would be. And the results will be different across different transformer, even different training runs.
+
+So, the idea behind energy, where we model the probability problem in the forms of energy try to bring that challenges with a solution. If we can model the probability problems/distribution problem as a physics problem, we can use phyiscs to control and solve it. And with this, we can gain a new way to control the internal dynamicas of our model.
+
+That is why, I think the reason why this model has been gaining traction recently.
+
+### So, what is energy in terms of probabilities?
+
+We know that when we train a neural network or a machine learning model, we always gives X (our input) to find Y. Sometimes, we gives one X, and from there we try to predict Y. Sometimes we have multiple X to predict one Y. and sometimes we have multiple X and multiple Y. All this are done discretely, separately without thinking of the latent connection between these variables.
+
+Then comes the generative model, that try to find the latent connection between these variables to ensure that all dependencies are encoded. But since this encoding is done during the training, and across billions of parameters, we cannot fully tracks where this encoding happens, thus results in the "black box" that we have know (although I don't agree with the term, I understand now where it comes from)
+
+So, this is where energy comes from. We model early one these connection between each variables through usage of a scalar energy. Then during training, we will minimize the energy of the correct connection (or configuration), and maximize the energy of wrong connection. By doing so, we will create an energy landscape for our data probabilities, that will be easily manouvered and experimented on when we need it later. With this energy landscape establish, we can use physics principle to navigate this landscape and try to understand fully our model. This is better than the "black box" approach that we currently have.
+
+So in mathematical sense, instead of normal
+
+𝑌∗=𝐹(𝑋) 
+
+where  𝑌∗  is predicted Y and  𝐹(𝑋)  is the statistic model/ machine learning model that we use. We now got
+
+𝑌∗=argmin𝑌∈y𝐸(𝑌,𝑋) 
+
+where given X, we try to find the best Y where it produces the lowest energy score. To put it more simply, we gives a compatibility score for each pair of X and Y. The one that is more correct will be selected based on the lowest energy that is produced.
+
+Now got it?
+
+I know that you guys have started scratching your head, so let's do some demonstration to show how this works
