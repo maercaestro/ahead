@@ -23,7 +23,7 @@ const HeroSection = () => {
       
       {/* Content with Glassmorphism */}
       <div className="container mx-auto px-4 py-20 z-10 relative">
-        <div className="max-w-4xl backdrop-blur-md bg-black/20 border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl">
+        <div className="max-w-6xl backdrop-blur-md bg-black/20 border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl">
           {/* Logo - Fade in animation */}
           <div className="mb-8 animate-[fadeInUp_0.6s_ease-out]">
             <img 
