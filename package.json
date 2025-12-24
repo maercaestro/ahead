@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tinacms dev -c \"vite\"",
+    "dev:fast": "vite",
     "build": "tinacms build && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

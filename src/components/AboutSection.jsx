@@ -4,34 +4,32 @@ const AboutSection = () => {
 
   const cardData = [
     {
-      icon: '📅',
-      title: '13',
-      subtitle: 'Years Working Experience',
-      color: 'text-primary',
-      borderColor: 'border-primary/30'
+      title: '13 Yrs',
+      subtitle: 'Refinery & Supply Chain',
+      color: 'text-blue-400',
+      borderColor: 'border-blue-400/50'
     },
     {
-      icon: '💰',
-      title: '>10M',
-      subtitle: 'USD Saved in Cost Optimization',
-      color: 'text-secondary',
-      borderColor: 'border-secondary/30'
+      title: 'RM 10M+',
+      subtitle: 'Optimization Savings',
+      color: 'text-green-400',
+      borderColor: 'border-green-400/50'
     },
     {
-      icon: '🏆',
-      title: '4',
-      subtitle: 'Wins in Hackathons & Conventions',
-      color: 'text-primary',
-      borderColor: 'border-primary/30'
+      title: 'PINN/LNN',
+      subtitle: 'AI Architecture Research',
+      color: 'text-cyan-400',
+      borderColor: 'border-cyan-400/50'
     },
     {
-      icon: '📚',
-      title: '3',
-      subtitle: 'Publications (Papers & Books)',
-      color: 'text-secondary',
-      borderColor: 'border-secondary/30'
+      title: '1st Place',
+      subtitle: 'Startup Hackathon Winner',
+      color: 'text-green-300',
+      borderColor: 'border-green-300/50'
     }
   ];
+
+  const techStack = ['Python', 'PyTorch', 'LaTeX', 'Optimization', 'React'];
 
   return (
     <section id="about" className="py-20 relative overflow-hidden">
@@ -41,37 +39,46 @@ const AboutSection = () => {
           About Me</span>
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start"> {/* Changed items-center to items-start */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
           <div>
             <p className="text-white/80 mb-4">
-              I&apos;m Abu Huzaifah, a Senior Process Engineer at PETRONAS with 13+ years of experience in oil & gas operations. 
-              What sets me apart is my unique blend of traditional engineering excellence and cutting-edge AI innovation.
+              I am a Senior Process Engineer at PETRONAS with over 13 years of experience in <span className="text-cyan-300 font-semibold">Refinery Operations</span>, <span className="text-cyan-300 font-semibold">Process Design</span>, and <span className="text-cyan-300 font-semibold">Supply Chain Optimization</span>. I am now bridging the gap between heavy industry and Artificial Intelligence.
             </p>
             
             <p className="text-white/80 mb-4">
-              From optimizing multi-million dollar refinery operations to developing revolutionary AI systems like MEGAT (which saved RM 1M+ and won innovation awards), 
-              I bridge the gap between industrial engineering and artificial intelligence. My expertise spans from Liquid Neural Networks research to enterprise-scale automation solutions.
+              My work combines deep domain expertise with <span className="text-cyan-300 font-semibold">Physics-Informed Neural Networks (PINNs)</span> and <span className="text-cyan-300 font-semibold">Liquid Neural Networks (LNNs)</span>. Whether optimizing complex plant operations or developing the 'Aliran Tunai' bot, I engineer solutions that solve real-world problems.
             </p>
             
-            <p className="text-white/80 mb-4">
-              As an active AI researcher, author, and educator, I&apos;ve published 13+ articles covering advanced topics like Liquid Neural Networks, AutoEncoders, and GANs. 
-              My mission is to democratize AI knowledge while solving real-world industrial challenges that matter.
+            <p className="text-white/80 mb-6">
+              I am currently pivoting to a leadership role in Industrial AI while pursuing Master&apos;s research in Energy-Based Models for control systems.
             </p>
+            
+            {/* Tech Stack Badges */}
+            <div className="mb-8">
+              <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wide">Tech Stack</h3>
+              <div className="flex flex-wrap gap-2">
+                {techStack.map((tech, index) => (
+                  <span 
+                    key={index}
+                    className="px-3 py-1.5 bg-white/5 backdrop-blur-sm border border-white/20 rounded-full text-cyan-300 text-xs font-medium hover:border-cyan-400/50 transition-colors"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
             
             {/* Cards Section */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {cardData.map((card, index) => (
                 <div 
                   key={index} 
-                  className={`p-6 rounded-xl bg-dark ${card.borderColor} border text-center transition-transform duration-300 hover:scale-105`}
+                  className={`p-6 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 hover:${card.borderColor} text-center transition-all duration-300 hover:scale-105 hover:shadow-lg`}
                 >
-                  <div className={`${card.color} text-4xl mb-3`}>
-                    <span>{card.icon}</span>
-                  </div>
-                  <h3 className={`text-4xl md:text-5xl font-bold ${card.color} mb-2`}>
+                  <h3 className={`text-3xl md:text-4xl font-bold ${card.color} mb-2`}>
                     {card.title}
                   </h3>
-                  <p className="text-sm md:text-base text-white/80">
+                  <p className="text-xs md:text-sm text-white/70">
                     {card.subtitle}
                   </p>
                 </div>
@@ -81,10 +88,12 @@ const AboutSection = () => {
           
           <div className="flex justify-center">
             <div className="relative w-64 h-64 md:w-80 md:h-80">
-              {/* Restored Profile Picture Background Gradient and Image */}
-              <div className="absolute inset-0 rounded-full bg-gradient-primary opacity-30 blur-2xl mix-blend-lighten"></div>
-              <div className="relative h-full w-full rounded-full bg-dark border-2 border-primary/50 overflow-hidden">
-                <img src={profilePic} alt="Abu Huzaifah" className="h-full w-full object-cover" />
+              {/* Tech Ring Effect */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 opacity-20 blur-2xl animate-pulse"></div>
+              <div className="relative h-full w-full rounded-full p-1 bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300">
+                <div className="h-full w-full rounded-full bg-dark overflow-hidden border-2 border-black">
+                  <img src={profilePic} alt="Abu Huzaifah" className="h-full w-full object-cover" />
+                </div>
               </div>
             </div>
           </div>
