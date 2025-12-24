@@ -15,18 +15,17 @@ const HeroSection = () => {
           alt="Background" 
           className="w-full h-full object-cover object-center"
         />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent"></div>
-        
-        {/* Additional gradient effects */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/70"></div>
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black to-transparent"></div>
+        {/* Enhanced gradient overlays for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/40"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
       </div>
       
-      {/* Content */}
+      {/* Content with Glassmorphism */}
       <div className="container mx-auto px-4 py-20 z-10 relative">
-        <div className="max-w-3xl">
-          <div className="mb-8">
+        <div className="max-w-4xl backdrop-blur-md bg-black/20 border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl">
+          {/* Logo - Fade in animation */}
+          <div className="mb-8 animate-[fadeInUp_0.6s_ease-out]">
             <img 
               src={logoPersonal} 
               alt="AHEAD Logo" 
@@ -34,47 +33,49 @@ const HeroSection = () => {
             />
           </div>
           
-          <h1 className="font-bold mb-4 tracking-tight">
-            <span className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 bg-clip-text text-transparent">AHEAD</span>
+          {/* Main heading - Fade in animation */}
+          <h1 className="font-bold mb-4 tracking-tight animate-[fadeInUp_0.8s_ease-out]">
+            <span className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 bg-clip-text text-transparent drop-shadow-lg">AHEAD</span>
           </h1>
           
-          <h2 className="text-xl md:text-3xl text-white/90 font-light mb-4">
-            Abu Huzaifah's Engineering & AI Dashboard
+          {/* Technical sub-header - Fade in animation */}
+          <h2 className="text-lg md:text-2xl text-cyan-400/90 font-mono font-light mb-8 tracking-wide animate-[fadeInUp_1s_ease-out]">
+            &gt; Abu Huzaifah's Engineering & AI Dashboard
           </h2>
           
-          <div className="flex flex-wrap gap-3 mb-8">
-            <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/30 rounded-full text-blue-300 text-sm font-medium">
-              🏭 Senior Process Engineer @ PETRONAS
+          {/* Dual Track badges - Fade in animation */}
+          <div className="flex flex-wrap gap-3 mb-8 animate-[fadeInUp_1.2s_ease-out]">
+            <span className="px-4 py-2 bg-blue-500/20 backdrop-blur-sm border border-blue-400/40 rounded-lg text-blue-300 text-sm font-semibold shadow-lg">
+              🏭 Senior Process Engineer (13y+)
             </span>
-            <span className="px-4 py-2 bg-cyan-400/20 border border-cyan-400/30 rounded-full text-cyan-300 text-sm font-medium">
-              🤖 AI Researcher & Author
+            <span className="px-4 py-2 bg-cyan-400/20 backdrop-blur-sm border border-cyan-400/40 rounded-lg text-cyan-300 text-sm font-semibold shadow-lg">
+              🧬 PINN & LNN Researcher
             </span>
-            <span className="px-4 py-2 bg-green-300/20 border border-green-300/30 rounded-full text-green-300 text-sm font-medium">
-              🏆 Innovation Award Winner
+            <span className="px-4 py-2 bg-green-300/20 backdrop-blur-sm border border-green-300/40 rounded-lg text-green-300 text-sm font-semibold shadow-lg">
+              🚀 Startup Hackathon Winner
             </span>
           </div>
           
-          <p className="text-white/80 mb-12 max-w-2xl text-lg leading-relaxed">
-            Stay <span className="text-cyan-400 font-semibold">AHEAD</span> with Abu Huzaifah. 
-            <span className="text-white/90 font-medium"> 13+ years of engineering excellence</span> at PETRONAS, pioneering 
-            <span className="text-blue-400 font-medium"> AI-driven solutions</span> that saved 
-            <span className="text-green-400 font-medium"> RM 10M+ </span> in operational costs. 
-            From <span className="text-cyan-400">Liquid Neural Networks</span> to enterprise automation, I am
-            bridging the gap between traditional engineering and cutting-edge AI.
+          {/* Enhanced paragraph with metrics highlighted - Fade in animation */}
+          <p className="text-white/90 mb-12 max-w-3xl text-base md:text-lg leading-relaxed animate-[fadeInUp_1.4s_ease-out]">
+            I am a <span className="text-white font-bold">Senior Process Engineer</span> at PETRONAS with over <span className="text-cyan-400 font-bold">13 years of experience</span> in refinery operations, process design, and supply chain optimization, now pivoting to the bleeding edge of <span className="text-blue-400 font-semibold">Industrial AI</span>. My work exists at the intersection of heavy industry and advanced algorithms. Combining deep domain expertise with <span className="text-cyan-400 font-semibold">Physics-Informed Neural Networks (PINNs)</span> and <span className="text-cyan-400 font-semibold">Liquid Neural Networks (LNNs)</span>.
+            <br/><br/>
+            Whether I'm saving <span className="text-green-400 font-bold">RM 10M+</span> in operational costs, winning startup hackathons, or writing science fiction, my goal is the same: to stay <span className="text-cyan-400 font-bold">AHEAD</span> of the curve and engineer solutions that solve complex, real-world problems.
           </p>
           
-          <div className="flex flex-wrap gap-4">
+          {/* CTA Buttons with distinct styles - Fade in animation */}
+          <div className="flex flex-wrap gap-4 animate-[fadeInUp_1.6s_ease-out]">
             <button 
               onClick={scrollToProjects} 
-              className="px-8 py-4 !bg-gray-800/80 border !border-white/20 !text-white font-medium rounded-lg transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500 hover:via-cyan-400 hover:to-green-300 hover:border-transparent hover:shadow-lg hover:shadow-cyan-500/25"
+              className="px-8 py-4 bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 text-black font-bold rounded-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] hover:scale-105 transform"
             >
-              Explore my projects
+              Explore Projects
             </button>
             <button
               onClick={() => document.getElementById('articles').scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 !bg-gray-800/80 border !border-white/20 !text-white font-medium rounded-lg transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500 hover:via-cyan-400 hover:to-green-300 hover:border-transparent hover:shadow-lg hover:shadow-blue-500/25"
+              className="px-8 py-4 bg-transparent border-2 border-white/40 text-white font-semibold rounded-lg transition-all duration-300 hover:bg-white/10 hover:border-white/60 backdrop-blur-sm"
             >
-              Read my writings
+              Read Writings
             </button>
           </div>
         </div>

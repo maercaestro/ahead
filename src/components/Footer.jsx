@@ -29,7 +29,7 @@ const Footer = () => {
                 <li><a href="#" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-white/60 hover:text-secondary transition-colors">Home</a></li>
                 <li><a href="#about" className="text-white/60 hover:text-secondary transition-colors">About</a></li>
                 <li><a href="#projects" className="text-white/60 hover:text-secondary transition-colors">Projects</a></li>
-                <li><button onClick={() => navigate('/research')} className="text-white/60 hover:text-secondary transition-colors">Research</button></li>
+                <li><a href="#" onClick={(e) => { e.preventDefault(); navigate('/research'); }} className="text-white/60 hover:text-secondary transition-colors">Research</a></li>
                 <li><a href="#resume" className="text-white/60 hover:text-secondary transition-colors">Resume</a></li>
                 <li><a href="#contact" className="text-white/60 hover:text-secondary transition-colors">Contact</a></li>
               </ul>
