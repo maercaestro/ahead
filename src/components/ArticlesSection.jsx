@@ -4,35 +4,38 @@ const ArticlesSection = () => {
     {
       id: 1,
       title: "AI untuk Pemula",
-      excerpt: "📚 Comprehensive beginner's guide to Artificial Intelligence in Bahasa Malaysia. Making AI concepts accessible to everyone with practical examples and real-world applications.",
+      excerpt: "Comprehensive beginner's guide to Artificial Intelligence in Bahasa Malaysia. Making AI concepts accessible to everyone with practical examples and real-world applications. Featured on Selamat Pagi Malaysia, a national TV morning show.",
       image: "/ai.png",
       date: "2024",
       readTime: "Book",
       platform: "Book",
-      link: "https://shopee.com.my/The-Patriots-AI-Untuk-Pemula-i.238336777.27275796556", // Update with actual book link
-      categories: ["AI", "Education", "Bahasa", "Book"]
+      link: "https://shopee.com.my/The-Patriots-AI-Untuk-Pemula-i.238336777.27275796556",
+      categories: ["AI", "Education", "Bahasa", "Book"],
+      type: "book"
     },
     {
       id: 2,
       title: "Azrahel si Penjejak Kubur",
-      excerpt: "📖 A captivating science fiction novel with cyberpunk themes. Discuss the impact of advance technology to human",
+      excerpt: "A captivating science fiction novel with cyberpunk themes. Discuss the impact of advance technology to human",
       image: "/azrahel.png",
       date: "2021",
       readTime: "Novel",
       platform: "Book",
-      link: "https://shopee.com.my/Azrahel-Si-Penjejak-Kubur-Patriots-Publishing-i.77313238.11073677040", // Update with actual book link
-      categories: ["Science-Fiction", "Novel", "Cyberpunk", "Book"]
+      link: "https://shopee.com.my/Azrahel-Si-Penjejak-Kubur-Patriots-Publishing-i.77313238.11073677040",
+      categories: ["Science-Fiction", "Novel", "Cyberpunk", "Book"],
+      type: "book"
     },
     {
       id: 3,
       title: "IEEE Publication: Lube Based Oil Unit Anomaly Limit Prediction using Decision Tree Classification Model",
-      excerpt: "🎓 Peer-reviewed research publication in IEEE on hybridizing Decision Tree Classifier with Fault Tree Analysis",
+      excerpt: "Peer-reviewed research publication in IEEE on hybridizing Decision Tree Classifier with Fault Tree Analysis",
       image: "/ieee.png",
       date: "2024",
       readTime: "Research Paper",
       platform: "IEEE",
-      link: "https://ieeexplore.ieee.org/document/10649879", // Update with actual IEEE paper link
-      categories: ["IEEE", "Research", "Decision Tree", "Fault Tree"]
+      link: "https://ieeexplore.ieee.org/document/10649879",
+      categories: ["IEEE", "Research", "Decision Tree", "Fault Tree"],
+      type: "ieee"
     },
     {
       id: 4,
@@ -146,6 +149,30 @@ const ArticlesSection = () => {
     }
   ];
 
+  // Helper function to get gradient based on category
+  const getCategoryGradient = (categories) => {
+    if (categories.includes("AI") || categories.includes("Neural Networks")) {
+      return "from-blue-500/20 to-cyan-400/20";
+    } else if (categories.includes("Cyberpunk") || categories.includes("Science-Fiction")) {
+      return "from-purple-500/20 to-pink-400/20";
+    } else if (categories.includes("Research") || categories.includes("IEEE")) {
+      return "from-yellow-500/20 to-amber-400/20";
+    } else if (categories.includes("GAN") || categories.includes("Generative Models")) {
+      return "from-green-500/20 to-emerald-400/20";
+    }
+    return "from-blue-500/20 to-cyan-400/20"; // Default
+  };
+
+  // Helper function to get card border styling based on type
+  const getCardBorderStyle = (article) => {
+    if (article.type === "ieee") {
+      return "border-yellow-400/40 hover:border-yellow-400/60 hover:shadow-[0_0_20px_rgba(251,191,36,0.2)]";
+    } else if (article.type === "book") {
+      return "border-blue-400/40 hover:border-blue-400/60 hover:shadow-[0_0_20px_rgba(59,130,246,0.2)]";
+    }
+    return "border-white/10 hover:border-cyan-400/50 hover:shadow-[0_0_15px_rgba(34,211,238,0.1)]";
+  };
+
   return (
     <section id="articles" className="py-20 relative overflow-hidden">
       <div className="container mx-auto px-4">
@@ -165,24 +192,33 @@ const ArticlesSection = () => {
               href={article.link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="bg-gray-900 rounded-xl overflow-hidden group transition-all hover:bg-gray-800 hover:shadow-lg hover:shadow-blue-500/10"
+              className={`bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border ${getCardBorderStyle(article)} group transition-all duration-300`}
             >
               <div className="h-48 overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+                <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient(article.categories)}`}></div>
                 <img 
                   src={article.image} 
                   alt={article.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
                 />
-                <div className="absolute bottom-3 left-4 z-20">
-                  <span className="inline-block bg-blue-500 text-xs font-medium text-white px-2 py-1 rounded">
+                <div className="absolute bottom-3 left-4 z-20 flex gap-2">
+                  <span className={`inline-block ${article.type === 'ieee' ? 'bg-yellow-500' : article.type === 'book' ? 'bg-blue-500' : 'bg-cyan-500'} text-xs font-medium text-white px-2 py-1 rounded`}>
                     {article.platform}
                   </span>
+                  {article.type === 'ieee' && (
+                    <span className="inline-block bg-yellow-500/90 text-xs font-medium text-black px-2 py-1 rounded">
+                      🏆 Peer Reviewed
+                    </span>
+                  )}
                 </div>
               </div>
               
               <div className="p-5">
-                <div className="flex items-center justify-between text-xs text-gray-400 mb-3">
+                <div className="flex items-center justify-between text-xs text-white/60 mb-3">
                   <span>{article.date}</span>
                   <span>{article.readTime}</span>
                 </div>
@@ -191,7 +227,7 @@ const ArticlesSection = () => {
                   {article.title}
                 </h3>
                 
-                <p className="text-gray-400 text-sm mb-4 line-clamp-3">
+                <p className="text-white/70 text-sm mb-4 line-clamp-3">
                   {article.excerpt}
                 </p>
                 
@@ -199,13 +235,13 @@ const ArticlesSection = () => {
                   {article.categories.slice(0, 2).map((category, index) => (
                     <span 
                       key={index} 
-                      className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded"
+                      className="text-xs bg-white/5 backdrop-blur-sm text-cyan-300 px-2 py-1 rounded border border-cyan-400/30"
                     >
                       {category}
                     </span>
                   ))}
                   {article.categories.length > 2 && (
-                    <span className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded">
+                    <span className="text-xs bg-white/5 backdrop-blur-sm text-white/60 px-2 py-1 rounded border border-white/20">
                       +{article.categories.length - 2}
                     </span>
                   )}

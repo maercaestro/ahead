@@ -1,6 +1,6 @@
 const ProjectCard = ({ title, description, tags, image, link }) => (
-  <div className="bg-dark rounded-xl overflow-hidden border border-white/10 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:scale-105 transform">
-    <div className="h-48 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+  <div className="bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-cyan-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20 hover:scale-105 transform">
+    <div className="h-48 bg-gradient-to-br from-blue-500/20 to-cyan-400/20 flex items-center justify-center">
       {image ? (
         <img src={image} alt={title} className="w-full h-full object-cover" />
       ) : (
@@ -17,7 +17,7 @@ const ProjectCard = ({ title, description, tags, image, link }) => (
       <p className="text-white/70 mb-4 text-sm">{description}</p>
       <div className="flex flex-wrap gap-2 mb-4">
         {tags.map((tag, index) => (
-          <span key={index} className="px-2 py-1 bg-dark rounded text-xs text-secondary border border-secondary/30">
+          <span key={index} className="px-2 py-1 bg-white/5 backdrop-blur-sm rounded text-xs text-cyan-300 border border-cyan-400/30">
             {tag}
           </span>
         ))}
@@ -27,7 +27,7 @@ const ProjectCard = ({ title, description, tags, image, link }) => (
           href={link} 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="inline-flex items-center text-sm text-primary hover:text-secondary transition-colors"
+          className="inline-flex items-center px-4 py-2 text-sm text-cyan-400 border border-cyan-400/40 rounded-lg hover:bg-cyan-400/10 hover:border-cyan-400/60 transition-all"
         >
           View Project
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -43,42 +43,42 @@ const ProjectsSection = () => {
   const projects = [
     {
       title: "Furnace Commander",
-      description: "🔥 Revolutionary AI-powered furnace control system leveraging cutting-edge Liquid Neural Networks (LNN) - the next generation of adaptive neural architectures. Built for real-world oil & gas operations with millisecond-precision control and self-adapting algorithms.",
+      description: "Revolutionary AI-powered furnace control system leveraging cutting-edge Liquid Neural Networks (LNN) - the next generation of adaptive neural architectures. Built for real-world oil & gas operations with millisecond-precision control and self-adapting algorithms.",
       tags: ["Python", "JavaScript", "Liquid Neural Networks", "Oil & Gas"],
       image: "/furnace-commander.png",
       link: "https://furnace-commander.vercel.app"
     },
     {
-      title: "Megat-Task",
-      description: "🤖 Enterprise-grade SaaS platform featuring autonomous AI agents that execute complex workflows without human intervention. Built with multi-agent orchestration using OpenAI's latest models - turning natural language into actionable business automation.",
-      tags: ["JavaScript", "OpenAI GPT-4", "Multi-Agent AI", "SaaS"],
-      image: "/task.png",
-      link: "https://github.com/maercaestro/megat-task"
+      title: "Truth Quest",
+      description: "AI-Powered Misinformation Shield. A YouTube fact-checking platform that cross-references video transcripts against verified databases using NLP. Designed to combat digital hallucinations and fake news.",
+      tags: ["NLP", "Firebase", "Fact-Checking API", "YouTube Data API", "AI Ethics"],
+      image: "/truth-quest.png",
+      link: "https://truth-quest.web.app/"
     },
     {
-      title: "Megat-Math",
-      description: "✨ Apple Math Notes competitor built from scratch! Advanced computer vision AI that instantly solves handwritten mathematical equations in real-time. Featured on Godam Sahur",
-      tags: ["React", "Computer Vision", "OpenAI Vision API"],
-      image: "/megat-math.png",
-      link: "https://megat-math.vercel.app"
+      title: "Aliran Tunai",
+      description: "Intelligent Cashflow Management System. Winner of PETRONAS Innovation Garage Hackathon. A financial engineering tool that uses predictive algorithms to forecast liquidity and automate budget tracking. Built with React, AWS, and MongoDB.",
+      tags: ["React", "AWS", "MongoDB", "Financial Eng.", "Predictive Analytics"],
+      image: "/aliran-tunai.png",
+      link: "https://github.com/maercaestro/aliran-tunai"
     },
     {
       title: "Megat-Analyst",
-      description: "📊 AI-powered petroleum market intelligence platform that processes millions of data points to predict crude oil trends. Features automated stakeholder reporting",
+      description: "AI-powered petroleum market intelligence platform that processes millions of data points to predict crude oil trends. Features automated stakeholder reporting",
       tags: ["Python", "Streamlit", "Market Intelligence", "Automation"],
       image: "/megat-analyst.png",
       link: "https://github.com/maercaestro/megat-analyst"
     },
     {
       title: "Petrol Station Sentiment Analysis",
-      description: "🏆 Award-winning hackathon solution that revolutionizes customer experience analysis for fuel stations. Uses BERT Multilingual to process 50+ languages and Google Places API to analyze 100k+ reviews",
+      description: "Award-winning hackathon solution that revolutionizes customer experience analysis for fuel stations. Uses BERT Multilingual to process 50+ languages and Google Places API to analyze 100k+ reviews",
       tags: ["Python", "BERT Multilingual", "Google Places API"],
       image: "/megat-sentiment.png",
       link: "https://github.com/maercaestro/sentiment-fuel"
     },
     {
       title: "OASIS - Oil Analytics System for Intelligent Solutions",
-      description: "⚡ Enterprise-scale optimization engine for oil & gas operations using advanced linear programming and multi-criteria decision-making. Built with Model Context Protocol (MCP) for standardized AI agents. Has potential to reduce operational costs by 30%.",
+      description: "Enterprise-scale optimization engine for oil & gas operations using advanced linear programming and multi-criteria decision-making. Built with Model Context Protocol (MCP) for standardized AI agents. Has potential to reduce operational costs by 30%.",
       tags: ["React", "MCP", "Linear Programming", "Enterprise"],
       image: "/oasis.png",
       link: "https://github.com/maercaestro/oasis"
