@@ -194,7 +194,7 @@ const ResumeSection = () => {
             
             <div className="mt-8">
               <a 
-                href="https://github.com/maercaestro/maercaestro/blob/510ab299d29345f609b2d53fd7ca4d38dd0d8cdc/2025-%20Resume%20Abu%20Huzaifah%20Bidin%20CE.pdf" 
+                href="/resume.pdf" 
                 className="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-blue-500 via-cyan-400 to-green-300 font-bold rounded-lg transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] hover:scale-105 transform"
                 style={{ color: 'white' }}
                 target="_blank"
